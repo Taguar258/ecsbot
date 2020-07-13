@@ -10,6 +10,29 @@ client = discord.Client()
 guild = None
 
 
+
+#Command Handle
+async def enter_command(command, channel, author):
+    command_list = {'help':'Display commands.', 'list_unaccepted':'Lists the users who have not accepted the rules.'}
+    if command_list[command]: # Command exists
+        if command == 'help':
+            help_command = 'Here are my commands:\n'
+            for command_object in command_list:
+                help_command += '{} : {}\n'.format(command_object, command_list[command_object]) #May want to pretty this in the future
+            await channel.send(help_command)
+        elif command == 'list_unaccepted':
+                
+            if ADMINROLE in author.roles:
+                reminds = read_reminds()
+                remind_string = "Here are people who have not accepted the rules:\n"
+                for i in reminds:
+                    member = guild.get_member(i[5])
+                    remind_string += member.name + '#' + member.discriminator +"\n"
+                await channel.send(remind_string)
+            else:
+                await channel.send("Sorry, you must be an admin to run that command!")
+
+
 @client.event
 async def on_ready():
     global guild
@@ -33,7 +56,13 @@ def read_reminds():
     return reminds["reminds"]
 
 
-@tasks.loop(minutes=1)
+
+
+
+
+
+
+@tasks.loop(hours=24)
 async def reminder():
     # [year, month, day, hour, minute, userid, status]
     reminds = read_reminds()
@@ -69,6 +98,7 @@ async def on_message(message):
         args = message.content.strip(PREFIX).split(" ")
         command = args[0]
         args.pop(0)
+        client.loop.create_task(enter_command(command, message.channel, message.author))
     return
 
 
@@ -113,7 +143,7 @@ async def on_raw_reaction_remove(payload):
 async def on_member_join(member):
     await member.send(embed=WELCOMEMSG)
     reminds = read_reminds()
-    reminder = datetime.now() + timedelta(hours=24)
+    reminder = datetime.now() + timedelta(minutes=1)
     reminds.append([reminder.year, reminder.month, reminder.day,
                     reminder.hour, reminder.minute, member.id, 0])
     write_reminds(reminds)
@@ -132,3 +162,5 @@ async def on_member_remove(member):
 
 
 client.run(TOKEN)
+
+
