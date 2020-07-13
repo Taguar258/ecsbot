@@ -18,11 +18,13 @@ async def on_ready():
     await client.change_presence(status=discord.Status.online,
                                  activity=discord.Game(STATUS))
     reminder.start()
+    return
 
 
 def write_reminds(reminds):
     with open('reminds.json', 'w') as json_file:
         json.dump({"reminds": reminds}, json_file)
+    return
 
 
 def read_reminds():
@@ -52,6 +54,7 @@ async def reminder():
         else:
             endreminds.append(i)
     write_reminds(endreminds)
+    return
 
 
 @client.event
@@ -63,6 +66,7 @@ async def on_message(message):
         args = message.content.strip(PREFIX).split(" ")
         command = args[0]
         args.pop(0)
+    return
 
 
 @client.event
@@ -104,12 +108,16 @@ async def on_raw_reaction_remove(payload):
 
 @client.event
 async def on_member_join(member):
+    await member.send(embed=WELCOMEMSG)
     reminds = read_reminds()
     reminder = datetime.now() + timedelta(hours=24)
+    for i in reminds:
+        if i[5] == member.id:
+            return
     reminds.append([reminder.year, reminder.month, reminder.day,
                     reminder.hour, reminder.minute, member.id, 0])
     write_reminds(reminds)
-    await member.send(embed=WELCOMEMSG)
+    return
 
 
 client.run(TOKEN)
