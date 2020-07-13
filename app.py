@@ -40,17 +40,20 @@ async def reminder():
     now = datetime.now()
     endreminds = []
     for i in reminds:
+        member = guild.get_member(i[5])
         reminder = datetime(i[0], i[1], i[2], i[3], i[4], 0, 0)
         if now > reminder:
             if i[6] in [0, 1]:
+                member.send(embed=REMINDERMSG)
                 print("Reminded " + str(i[5]) + " " + str(i[6]))
                 newremind = reminder + timedelta(hours=24)
                 endreminds.append([newremind.year, newremind.month,
                                    newremind.day, newremind.hour,
                                    newremind.minute, i[5], i[6] + 1])
             else:
+                member.send(embed=KICKMSG)
                 print("Kicked " + str(i[5]) + " " + str(i[6]))
-                guild.get_member(i[5]).kick(reason="Didn't accept the rules.")
+                member.kick(reason="Didn't accept the rules.")
         else:
             endreminds.append(i)
     write_reminds(endreminds)
