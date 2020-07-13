@@ -23,6 +23,9 @@ VERIFIEDROLE = 690212961876312094
 # Staff roles, for admin commands.
 ADMINROLE = 724251714613411851
 
+# Spam channel to prevent 
+SPAMCHANNEL = 690244875278745758
+
 # Custom roles {b64reaction: [rolename, roleid]}
 ROLES = {b"8J+UlA==": ["ping", 690239204667818102],
          b"4oyo77iP": ["coder", 690243098533822485],

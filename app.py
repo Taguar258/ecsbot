@@ -14,23 +14,26 @@ guild = None
 #Command Handle
 async def enter_command(command, channel, author):
     command_list = {'help':'Display commands.', 'list_unaccepted':'Lists the users who have not accepted the rules.'}
-    if command_list[command]: # Command exists
-        if command == 'help':
-            help_command = 'Here are my commands:\n'
-            for command_object in command_list:
-                help_command += '{} : {}\n'.format(command_object, command_list[command_object]) #May want to pretty this in the future
-            await channel.send(help_command)
-        elif command == 'list_unaccepted':
-                
-            if ADMINROLE in author.roles:
-                reminds = read_reminds()
-                remind_string = "Here are people who have not accepted the rules:\n"
-                for i in reminds:
-                    member = guild.get_member(i[5])
-                    remind_string += member.name + '#' + member.discriminator +"\n"
-                await channel.send(remind_string)
-            else:
-                await channel.send("Sorry, you must be an admin to run that command!")
+    if channel == SPAMCHANNEL:
+        if command_list[command]: # Command exists
+            if command == 'help':
+                help_command = 'Here are my commands:\n'
+                for command_object in command_list:
+                    help_command += '{} : {}\n'.format(command_object, command_list[command_object]) #May want to pretty this in the future
+                await channel.send(help_command)
+            elif command == 'list_unaccepted':
+                    
+                if ADMINROLE in author.roles:
+                    reminds = read_reminds()
+                    remind_string = "Here are people who have not accepted the rules:\n"
+                    for i in reminds:
+                        member = guild.get_member(i[5])
+                        remind_string += member.name + '#' + member.discriminator +"\n"
+                    await channel.send(remind_string)
+                else:
+                    await channel.send("Sorry, you must be an admin to run that command!")
+        else:
+            await channel.send("Invalid command!")
 
 
 @client.event
