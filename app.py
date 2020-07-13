@@ -57,7 +57,7 @@ def read_reminds():
 
 
 
-@tasks.loop(hours=24)
+@tasks.loop(minutes=1)
 async def reminder():
     # [year, month, day, hour, minute, userid, status]
     reminds = read_reminds()
