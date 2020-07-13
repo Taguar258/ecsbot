@@ -111,12 +111,20 @@ async def on_member_join(member):
     await member.send(embed=WELCOMEMSG)
     reminds = read_reminds()
     reminder = datetime.now() + timedelta(hours=24)
-    for i in reminds:
-        if i[5] == member.id:
-            return
     reminds.append([reminder.year, reminder.month, reminder.day,
                     reminder.hour, reminder.minute, member.id, 0])
     write_reminds(reminds)
+    return
+
+
+@client.event
+async def on_member_remove(member):
+    reminds = read_reminds()
+    endreminds = []
+    for i in reminds:
+        if i[5] != member.id:
+            endreminds.append(i)
+    write_reminds(endreminds)
     return
 
 
