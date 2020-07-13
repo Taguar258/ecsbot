@@ -14,7 +14,7 @@ guild = None
 #Command Handle
 async def enter_command(command, channel, author):
     command_list = {'help':'Display commands.', 'list_unaccepted':'Lists the users who have not accepted the rules.'}
-    if channel == SPAMCHANNEL:
+    if channel.id == SPAMCHANNEL:
         if command_list[command]: # Command exists
             if command == 'help':
                 help_command = 'Here are my commands:\n'
