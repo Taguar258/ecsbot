@@ -57,11 +57,6 @@ def read_reminds():
 
 
 
-
-
-
-
-
 @tasks.loop(hours=24)
 async def reminder():
     # [year, month, day, hour, minute, userid, status]
@@ -143,7 +138,7 @@ async def on_raw_reaction_remove(payload):
 async def on_member_join(member):
     await member.send(embed=WELCOMEMSG)
     reminds = read_reminds()
-    reminder = datetime.now() + timedelta(minutes=1)
+    reminder = datetime.now() + timedelta(hours=24)
     reminds.append([reminder.year, reminder.month, reminder.day,
                     reminder.hour, reminder.minute, member.id, 0])
     write_reminds(reminds)
@@ -162,5 +157,3 @@ async def on_member_remove(member):
 
 
 client.run(TOKEN)
-
-
