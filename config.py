@@ -20,6 +20,9 @@ RULESREACTION = b"4pyF"
 UNVERIFIEDROLE = 732212270385332225
 VERIFIEDROLE = 690212961876312094
 
+# Roles for admin only commands:
+STAFFROLE = 724251714613411851
+
 # Custom roles {b64reaction: [rolename, roleid]}
 ROLES = {b"8J+UlA==": ["ping", 690239204667818102],
          b"4oyo77iP": ["coder", 690243098533822485],

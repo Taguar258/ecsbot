@@ -4,6 +4,7 @@ from base64 import b64encode
 from datetime import datetime, timedelta
 import json
 from discord.ext import tasks
+import asyncio
 
 client = discord.Client()
 
@@ -44,20 +45,35 @@ async def reminder():
         reminder = datetime(i[0], i[1], i[2], i[3], i[4], 0, 0)
         if now > reminder:
             if i[6] in [0, 1]:
-                member.send(embed=REMINDERMSG)
+                await member.send(embed=REMINDERMSG)
                 print("Reminded " + str(i[5]) + " " + str(i[6]))
                 newremind = reminder + timedelta(hours=24)
                 endreminds.append([newremind.year, newremind.month,
                                    newremind.day, newremind.hour,
                                    newremind.minute, i[5], i[6] + 1])
             else:
-                member.send(embed=KICKMSG)
+                await member.send(embed=KICKMSG)
                 print("Kicked " + str(i[5]) + " " + str(i[6]))
-                member.kick(reason="Didn't accept the rules.")
+                await member.kick(reason="Didn't accept the rules.")
         else:
             endreminds.append(i)
     write_reminds(endreminds)
     return
+
+
+async def exec_command(author, channel, command, args):
+    global guild
+    if guild.get_role(STAFFROLE) not in author.roles:
+        return
+    if command == "purge":
+        if len(args) == 0 or not args[0].isdigit():
+            await channel.send("Please supply a valid ID.")
+            return
+        await channel.send("Purging, please wait...")
+        for i in guild.channels:
+            if str(i.type) == "text":
+                await i.purge(check=lambda m: m.author.id == int(args[0]))
+        await channel.send("Done, if not all messages were affected re-do!")
 
 
 @client.event
@@ -69,6 +85,9 @@ async def on_message(message):
         args = message.content.strip(PREFIX).split(" ")
         command = args[0]
         args.pop(0)
+
+    await exec_command(message.author, message.channel, command, args)
+
     return
 
 
