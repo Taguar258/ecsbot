@@ -45,14 +45,21 @@ async def reminder():
         reminder = datetime(i[0], i[1], i[2], i[3], i[4], 0, 0)
         if now > reminder:
             if i[6] in [0, 1]:
-                await member.send(embed=REMINDERMSG)
+                try:
+                    await member.send(embed=REMINDERMSG)
+                except discord.errors.Forbidden:
+                    # dms disabled
+                    pass
                 print("Reminded " + str(i[5]) + " " + str(i[6]))
                 newremind = reminder + timedelta(hours=24)
                 endreminds.append([newremind.year, newremind.month,
                                    newremind.day, newremind.hour,
                                    newremind.minute, i[5], i[6] + 1])
             else:
-                await member.send(embed=KICKMSG)
+                try:
+                    await member.send(embed=KICKMSG)
+                except discord.errors.Forbidden:
+                    pass
                 print("Kicked " + str(i[5]) + " " + str(i[6]))
                 await member.kick(reason="Didn't accept the rules.")
         else:
@@ -83,10 +90,11 @@ async def on_message(message):
 
     if message.content.startswith(PREFIX):
         args = message.content.strip(PREFIX).split(" ")
+        if not len(args):
+            return
         command = args[0]
         args.pop(0)
-
-    await exec_command(message.author, message.channel, command, args)
+        await exec_command(message.author, message.channel, command, args)
 
     return
 
