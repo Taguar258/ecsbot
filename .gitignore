@@ -1,3 +1,11 @@
+# Server-specific Files
+logs.json
+punishments.json
+reminds.json
+
+# Don't leak the token
+tokens.py
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
