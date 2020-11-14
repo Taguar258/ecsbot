@@ -15,7 +15,7 @@ client = discord.Client(intents=intents)
 
 
 async def reminds():
-    reminds = util.read_json("reminds.json")["reminds"]
+    reminds = util.read_json("data/reminds.json")["reminds"]
     now = datetime.now()
     endreminds = []
     for i in reminds:
@@ -45,12 +45,12 @@ async def reminds():
                     pass
         else:
             endreminds.append(i)
-    util.write_json("reminds.json", {"reminds": endreminds})
+    util.write_json("data/reminds.json", {"reminds": endreminds})
     return
 
 async def punishments():
     bancache = {}
-    punishments = util.read_json("punishments.json")["punishments"]
+    punishments = util.read_json("data/punishments.json")["punishments"]
     now = datetime.now()
     endpunishments = []
     for i in punishments:
@@ -76,7 +76,7 @@ async def punishments():
                 await member.unban(reason="Ban expired.")
         else:
             endpunishments.append(i)
-    util.write_json("punishments.json", {"punishments": endpunishments})
+    util.write_json("data/punishments.json", {"punishments": endpunishments})
     return
 
 async def membercount():
@@ -104,6 +104,7 @@ async def on_ready():
     print("Bot is ready, " + client.user.name)
     await client.change_presence(status=discord.Status.online,
                                  activity=discord.Game(config.STATUS))
+    util.init_data()
     #await tick()
     await membercount()
     tick.start()
@@ -194,7 +195,7 @@ async def on_raw_reaction_remove(payload):
 async def on_member_join(member):
     guild = member.guild
     await util.sendDmEmbed(member, config.WELCOMEMSG)
-    reminds = util.read_json("reminds.json")["reminds"]
+    reminds = util.read_json("data/reminds.json")["reminds"]
     reminder = datetime.now() + timedelta(hours=24)
     reminds.append({"year": reminder.year, 
                     "month": reminder.month,
@@ -204,8 +205,8 @@ async def on_member_join(member):
                     "userid": member.id,
                     "guild": guild.id,
                     "status": 0})
-    util.write_json("reminds.json", {"reminds": reminds})
-    punishments = util.read_json("punishments.json")["punishments"]
+    util.write_json("data/reminds.json", {"reminds": reminds})
+    punishments = util.read_json("data/punishments.json")["punishments"]
     for i in punishments:
         if i["userid"] == member.id and i["type"] == "mute":
             await member.add_roles(guild.get_role(config.MUTEDROLE),
@@ -219,12 +220,12 @@ async def on_member_join(member):
 
 @client.event
 async def on_member_remove(member):
-    reminds = util.read_json("reminds.json")["reminds"]
+    reminds = util.read_json("data/reminds.json")["reminds"]
     endreminds = []
     for i in reminds:
         if i["userid"] != member.id:
            endreminds.append(i)
-    util.write_json("reminds.json", {"reminds": endreminds})
+    util.write_json("data/reminds.json", {"reminds": endreminds})
     await membercount()
     return
 

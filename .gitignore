@@ -1,7 +1,5 @@
 # Server-specific Files
-logs.json
-punishments.json
-reminds.json
+data/
 
 # Don't leak the token
 tokens.py
