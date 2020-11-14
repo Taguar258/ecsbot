@@ -112,6 +112,12 @@ async def whois(channel, guild, args):
 
     await channel.send(embed=embed)
 
+async def ping(channel, ping):
+    embed = discord.Embed(title="Ping", color=0x57008b)
+
+    embed.add_field(name="API", value=str(round(ping*1000)) + "ms", inline=True)
+    await channel.send(embed=embed)
+
 
 
 async def ban(author, channel, guild, args):
@@ -162,7 +168,7 @@ async def ban(author, channel, guild, args):
                               timestr + ". Reason: " + reason)
     await member.ban(reason="Banned by " + fullname)
 
-    endtime = datetime.now() + timedelta(minutes=time_in_minutes)
+    endtime = datetime.utcnow() + timedelta(minutes=time_in_minutes)
     punishments.append({"year": endtime.year, 
                         "month": endtime.month,
                         "day": endtime.day, 
@@ -173,7 +179,7 @@ async def ban(author, channel, guild, args):
                         "type": "ban"})
     util.write_json("data/punishments.json", {"punishments": punishments})
 
-    now = datetime.now()
+    now = datetime.utcnow()
     logs = util.read_json("data/logs.json")["logs"]
     logs.append({"year": now.year, 
                  "month": now.month,
@@ -240,7 +246,7 @@ async def mute(author, channel, guild, args):
     muterole = guild.get_role(config.MUTEDROLE)
     await member.add_roles(muterole, reason="Muted by " + fullname)
 
-    endtime = datetime.now() + timedelta(minutes=time_in_minutes)
+    endtime = datetime.utcnow() + timedelta(minutes=time_in_minutes)
     punishments.append({"year": endtime.year, 
                         "month": endtime.month,
                         "day": endtime.day, 
@@ -251,7 +257,7 @@ async def mute(author, channel, guild, args):
                         "type": "mute"})
     util.write_json("data/punishments.json", {"punishments": punishments})
 
-    now = datetime.now()
+    now = datetime.utcnow()
     logs = util.read_json("data/logs.json")["logs"]
     logs.append({"year": now.year, 
                  "month": now.month,
@@ -332,7 +338,7 @@ async def warn(author, channel, guild, args):
         reason += i 
         reason += " "
 
-    now = datetime.now()
+    now = datetime.utcnow()
     logs = util.read_json("data/logs.json")["logs"]
     logs.append({"year": now.year, 
                  "month": now.month,

@@ -16,7 +16,7 @@ client = discord.Client(intents=intents)
 
 async def reminds():
     reminds = util.read_json("data/reminds.json")["reminds"]
-    now = datetime.now()
+    now = datetime.utcnow()
     endreminds = []
     for i in reminds:
         guild = client.get_guild(i["guild"])
@@ -51,7 +51,7 @@ async def reminds():
 async def punishments():
     bancache = {}
     punishments = util.read_json("data/punishments.json")["punishments"]
-    now = datetime.now()
+    now = datetime.utcnow()
     endpunishments = []
     for i in punishments:
         if i["guild"] not in bancache.keys():
@@ -148,6 +148,9 @@ async def exec_command(author, channel, command, args, guild):
     elif command in ["infractions", "modlogs", "punishments", "detentions"]:
         await commands.infractions(author, channel, guild, args)
 
+    elif command in ["ping", "pong"]:
+        await commands.ping(channel, client.latency)
+
 
 @client.event
 async def on_message(message):
@@ -196,7 +199,7 @@ async def on_member_join(member):
     guild = member.guild
     await util.sendDmEmbed(member, config.WELCOMEMSG)
     reminds = util.read_json("data/reminds.json")["reminds"]
-    reminder = datetime.now() + timedelta(hours=24)
+    reminder = datetime.utcnow() + timedelta(hours=24)
     reminds.append({"year": reminder.year, 
                     "month": reminder.month,
                     "day": reminder.day, 
