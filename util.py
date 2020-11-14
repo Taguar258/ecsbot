@@ -1,7 +1,8 @@
 import json
 from discord import errors, Embed
-from config import config
 import os
+
+from config.config import config
 
 
 async def sendDmEmbed(member, embed):

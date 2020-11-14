@@ -1,10 +1,15 @@
 import discord
-from config import config
-import util
 from datetime import datetime, timedelta
+
+from config.config import config
+import util
 
 
 async def purge(author, channel, guild, args):
+
+    if len(args) == 0:
+        await channel.send("Please supply a valid ID.")
+        return
 
     await channel.send("Purging, please wait...")
 
@@ -15,109 +20,6 @@ async def purge(author, channel, guild, args):
     await util.log(author, guild, "Purge", " has purged all messages from <@" + args[0] + ">")
 
     await channel.send("Done, if not all messages were affected re-do!")
-
-
-async def verify(author, channel, guild, args):
-    member = await util.parse_member(args, guild)
-    if member == None:
-        await channel.send("Please supply a valid mention or ID.")
-        return
-
-    verifiedrole = guild.get_role(config.VERIFIEDROLE)
-    unverifiedrole = guild.get_role(config.UNVERIFIEDROLE)
-
-    await member.add_roles(verifiedrole, 
-                            reason="Verified by a moderator.")
-
-    await member.remove_roles(unverifiedrole, 
-                                reason="Verified by a moderator.")
-
-    await channel.send("Successfully verified " + member.mention + "!")
-    await util.log(author, guild, "Verification", " has verified " + member.mention)
-
-    reminds = util.read_json("data/reminds.json")["reminds"]
-    endreminds = []
-
-    for i in reminds:
-        if i["userid"] != int(args[0]):
-            endreminds.append(i)
-
-    util.write_json("data/reminds.json", {"reminds": endreminds})
-
-
-async def vpurge(author, channel, guild, args):
-    category = guild.get_channel(config.VERIFICATIONCHANNELCAT)
-
-    for i in category.channels:
-        if i.type == discord.ChannelType.text and i.name == config.VERIFICATIONCHANNELNAME:
-            await i.delete()
-
-    overwrites = {
-        guild.get_role(config.UNVERIFIEDROLE): 
-            discord.PermissionOverwrite(read_messages=True, 
-                                        send_messages=True, 
-                                        read_message_history=True),
-        guild.get_role(config.STAFFROLE): 
-            discord.PermissionOverwrite(read_messages=True, 
-                                        send_messages=True, 
-                                        read_message_history=True),
-        guild.get_role(config.VERIFIEDROLE): 
-            discord.PermissionOverwrite(read_messages=False, 
-                                        send_messages=False, 
-                                        read_message_history=False),
-    }
-    vchannel = await guild.create_text_channel(config.VERIFICATIONCHANNELNAME, 
-                                                category=category,
-                                                overwrites=overwrites,
-                                                topic="Verify yourself to get access to the " \
-                                                      "other channels and be able to communicate " \
-                                                      "with others.")
-    await vchannel.send(config.VERIFICATIONCHANNELMESSAGE)
-    await util.log(author, guild, "Verification Purge", " has purged the #verification channel!")
-    await channel.send("Successfully purged the verification channel!")
-
-
-async def reject(author, channel, guild, args):
-    if len(args) == 0 or not args[0].isdigit():
-        await channel.send("Please supply a valid ID.")
-        return
-
-    member = guild.get_member(int(args[0]))
-    await util.sendDmEmbed(member, config.DENIEDMSG)
-    await member.ban(reason="Verification denied by a moderator.")
-    await util.log(author, guild, "Reject", " has rejected " + member.mention)
-    await channel.send("Successfully denied " + member.mention + "!")
-
-
-async def whois(channel, guild, args):
-    member = await util.parse_member(args, guild)
-    if member == None:
-        await channel.send("Please supply a valid mention or ID.")
-        return
-
-    fullname = member.name + "#" + member.discriminator
-    joinedstrf = member.joined_at.strftime("%d/%m/%Y %H:%M:%S")
-    createdstrf = member.created_at.strftime("%d/%m/%Y %H:%M:%S")
-
-    embed = discord.Embed(title=fullname, color=config.COLOR)
-
-    embed.add_field(name="Nick", 
-                    value=member.display_name, inline=True)
-    embed.add_field(name="Username", 
-                    value=fullname, inline=True)
-    embed.add_field(name="Joined", 
-                    value=joinedstrf, inline=False)
-    embed.add_field(name="Created", 
-                    value=createdstrf, inline=False)
-
-    await channel.send(embed=embed)
-
-
-async def ping(channel, ping):
-    embed = discord.Embed(title="Ping", color=config.COLOR)
-
-    embed.add_field(name="API", value=str(round(ping*1000)) + "ms", inline=True)
-    await channel.send(embed=embed)
 
 
 async def ban(author, channel, guild, args):
@@ -195,7 +97,6 @@ async def ban(author, channel, guild, args):
 
 
     await channel.send("Successfully banned " + member.mention + "!")
-    
 
 async def mute(author, channel, guild, args):
     fullname = author.name + "#" + author.discriminator
@@ -292,7 +193,6 @@ async def unban(author, channel, guild, args):
     util.write_json("data/punishments.json", {"punishments": endpunishments})
     await channel.send("Successfully unbanned " + member.mention + "!")
 
-
 async def unmute(author, channel, guild, args):
     fullname = author.name + "#" + author.discriminator
 
@@ -365,6 +265,7 @@ async def warn(author, channel, guild, args):
 
     await channel.send("Successfully warned " + member.mention + "!")
     pass
+
 
 async def kick(author, channel, guild, args):
     fullname = author.name + "#" + author.discriminator
@@ -446,4 +347,3 @@ async def infractions(author, channel, guild, args):
     
     await channel.send(embed=embed)
     pass
-

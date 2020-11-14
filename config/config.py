@@ -1,5 +1,5 @@
 from discord import Embed
-import tokens
+import config.tokens as tokens
 
 TESTING = True
 
