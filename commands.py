@@ -334,6 +334,10 @@ async def warn(author, channel, guild, args):
 
     reason = ""
 
+    if len(args) == 1:
+        await channel.send("No Reason specified")
+        return
+
     for i in args[1:]:
         reason += i 
         reason += " "
@@ -362,23 +366,71 @@ async def warn(author, channel, guild, args):
     await channel.send("Successfully warned " + member.mention + "!")
     pass
 
+async def kick(author, channel, guild, args):
+    fullname = author.name + "#" + author.discriminator
 
-async def infractions(author, channel, guild, args):
     member = await util.parse_member(args, guild)
     if member == None:
         await channel.send("Please supply a valid mention or ID.")
         return
 
-    fullname = member.name + "#" + member.discriminator
+    if len(args) == 1:
+        await channel.send("No Reason specified")
+        return
 
+    reason = ""
+
+    for i in args[1:]:
+        reason += i
+        reason += " "
+
+    now = datetime.utcnow()
+    logs = util.read_json("data/logs.json")["logs"]
+    logs.append({"year": now.year, 
+                 "month": now.month,
+                 "day": now.day, 
+                 "hour": now.hour,
+                 "minute": now.minute, 
+                 "userid": member.id,
+                 "guild": guild.id,
+                 "reason": reason,
+                 "type": "kick"})
+    util.write_json("data/logs.json", {"logs": logs})
+
+    embed = config.KICKMSG
+    embed.add_field(name="Reason", 
+                    value=reason)
+    await util.sendDmEmbed(member, embed)
+
+    await util.log(author, guild, "Kick", " has kicked " + member.mention + 
+                             ". Reason: " + reason)
+
+    await member.kick(reason="Kicked by " + fullname)
+
+    await channel.send("Successfully kicked " + member.mention + "!")
+    pass
+
+
+async def infractions(author, channel, guild, args):
+    userid = await util.parse_id(args)
+    if userid == None:
+        await channel.send("Please supply a valid mention or ID.")
+        return
+
+    member = guild.get_member(userid)
+
+    if member == None:
+        fullname = userid
+    else:
+        fullname = member.name + "#" + member.discriminator
 
     embed = discord.Embed(title=fullname, color=config.COLOR)
 
     logs = util.read_json("data/logs.json")["logs"]
 
     for i in logs:
-        if i["userid"] == member.id:
-            if i["type"] == "warn":
+        if i["userid"] == userid:
+            if i["type"] in ["warn", "kick"]:
                 embed.add_field(name=i["type"].capitalize(), 
                                 value=f"Time: {i['day']}/{i['month']}/{i['year']} " + 
                                     f"{i['hour']}:{i['minute']}\n" +

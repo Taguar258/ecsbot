@@ -46,6 +46,21 @@ async def parse_member(args, guild):
         else:
             return None
 
+
+async def parse_id(args):
+    if len(args) == 0:
+        return None
+    mention_or_id = args[0]
+    if mention_or_id.isdigit():
+        return int(mention_or_id)
+    else:
+        mention_or_id = mention_or_id.strip("<@!").strip("<@").strip(">")
+        if mention_or_id.isdigit():
+            return int(mention_or_id)
+        else:
+            return None
+
+
 async def parse_member_banlist(args, guild):
     bans = await guild.bans()
 

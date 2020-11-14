@@ -145,6 +145,9 @@ async def exec_command(author, channel, command, args, guild):
     elif command in ["warn", "pewpew"]:
         await commands.warn(author, channel, guild, args)
 
+    elif command == "kick":
+        await commands.kick(author, channel, guild, args)
+
     elif command in ["infractions", "modlogs", "punishments", "detentions"]:
         await commands.infractions(author, channel, guild, args)
 

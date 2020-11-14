@@ -78,6 +78,8 @@ If a mod is online but doesn't see your message in #verification, you can ping t
                             description="We're sorry, but you have been banned for violating one of our rules. You can appeal this at banappeal@sw1tchbl4d3.com", color=COLOR)
     WARNMSG = Embed(title="Ethical Computing Society",
                             description="We're sorry, but you have been warned for violating one of our rules.", color=COLOR)
+    KICKMSG = Embed(title="Ethical Computing Society",
+                            description="We're sorry, but you have been kicked for violating one of our rules.", color=COLOR)
 
 class TestingEnv:
     TOKEN = tokens.TOKENTESTING
@@ -117,6 +119,7 @@ class TestingEnv:
     MUTEMSG = ProductionEnv.MUTEMSG
     BANMSG = ProductionEnv.BANMSG
     WARNMSG = ProductionEnv.WARNMSG
+    KICKMSG = ProductionEnv.KICKMSG
 
 if TESTING:
     config = TestingEnv
