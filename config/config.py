@@ -119,7 +119,7 @@ class TestingEnv:
     MUTEMSG = ProductionEnv.MUTEMSG
     BANMSG = ProductionEnv.BANMSG
     WARNMSG = ProductionEnv.WARNMSG
-    KICKMSG = ProductionEnv.KICKMSG
+    REMINDKICKMSG = ProductionEnv.REMINDKICKMSG
 
 if TESTING:
     config = TestingEnv
