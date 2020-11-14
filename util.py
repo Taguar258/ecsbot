@@ -1,6 +1,6 @@
 import json
 from discord import errors, Embed
-from config import *
+from config import config
 
 
 async def sendDmEmbed(member, embed):
@@ -23,7 +23,7 @@ def read_json(filename):
 
 
 async def log(author, guild, title, message):
-    channel = guild.get_channel(LOGCHANNEL)
+    channel = guild.get_channel(config.LOGCHANNEL)
     embed = Embed(title=title, 
                   description=author.mention + " " + message,
                   color=0x57008b)
