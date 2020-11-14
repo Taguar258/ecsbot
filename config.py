@@ -1,4 +1,4 @@
-import discord
+from discord import Embed
 import tokens
 
 TESTING = True
@@ -57,21 +57,21 @@ class ProductionEnv:
     """
 
     # Discord Embeds for Reminders and various other warnings.
-    WELCOMEMSG = discord.Embed(title="Ethical Computing Society", 
+    WELCOMEMSG = Embed(title="Ethical Computing Society", 
                             description="Welcome to the Ethical Computing Society! To be able to chat, verify yourself in #verification!", color=0x57008b)
-    REMINDERMSG = discord.Embed(title="Ethical Computing Society", 
+    REMINDERMSG = Embed(title="Ethical Computing Society", 
                             description="We've seen that you didn't verify yet! To verify yourself in #verification!", color=0x57008b)
-    KICKMSG = discord.Embed(title="Ethical Computing Society", 
+    KICKMSG = Embed(title="Ethical Computing Society", 
                             description="We're sorry, but you didn't verify yourself and we had to kick you. You can always rejoin if you want to come back!", color=0x57008b)
-    DENIEDMSG = discord.Embed(title="Ethical Computing Society",
+    DENIEDMSG = Embed(title="Ethical Computing Society",
                             description="We're sorry, but we suspect you'd break one of our Rules on the server, so we couldn't verify you. You can appeal this at banappeal@sw1tchbl4d3.com", color=0x57008b)
-    UNMUTEMSG = discord.Embed(title="Ethical Computing Society",
+    UNMUTEMSG = Embed(title="Ethical Computing Society",
                             description="We're happy to notify you that you have been unmuted! Get chatting!", color=0x57008b)
-    MUTEMSG = discord.Embed(title="Ethical Computing Society",
+    MUTEMSG = Embed(title="Ethical Computing Society",
                             description="We're sorry, but you have been muted for violating one of our rules. You can appeal this in the #muteappeal channel!", color=0x57008b)
-    BANMSG = discord.Embed(title="Ethical Computing Society",
+    BANMSG = Embed(title="Ethical Computing Society",
                             description="We're sorry, but you have been banned for violating one of our rules. You can appeal this at banappeal@sw1tchbl4d3.com", color=0x57008b)
-    WARNMSG = discord.Embed(title="Ethical Computing Society",
+    WARNMSG = Embed(title="Ethical Computing Society",
                             description="We're sorry, but you have been warned for violating one of our rules.", color=0x57008b)
 
 class TestingEnv:

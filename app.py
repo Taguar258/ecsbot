@@ -1,21 +1,21 @@
-from discord import *
+import discord
 from config import config
 import commands
 from base64 import b64encode
 from datetime import datetime, timedelta
 from discord.ext import tasks
-from util import *
+import util
 
 intents = discord.Intents.default()
 intents.members = True
 intents.typing = False
 intents.presences = False
 
-client = Client(intents=intents)
+client = discord.Client(intents=intents)
 
 
 async def reminds():
-    reminds = read_json("reminds.json")["reminds"]
+    reminds = util.read_json("reminds.json")["reminds"]
     now = datetime.now()
     endreminds = []
     for i in reminds:
@@ -25,7 +25,7 @@ async def reminds():
                             i["hour"], i["minute"], 0, 0)
         if now > reminder:
             if i["status"] in [0, 1]:
-                await sendDmEmbed(member, config.REMINDERMSG)
+                await util.sendDmEmbed(member, config.REMINDERMSG)
                 print("Reminded",i["userid"],i["status"])
                 newremind = reminder + timedelta(hours=24)
                 endreminds.append({"year": newremind.year, 
@@ -37,7 +37,7 @@ async def reminds():
                                    "guild": i["guild"],
                                    "status": i["status"] + 1})
             else:
-                await sendDmEmbed(member, config.KICKMSG)
+                await util.sendDmEmbed(member, config.KICKMSG)
                 print("Kicked",i["userid"],i["status"])
                 try:
                     await member.kick(reason="Didn't verify.")
@@ -45,12 +45,12 @@ async def reminds():
                     pass
         else:
             endreminds.append(i)
-    write_json("reminds.json", {"reminds": endreminds})
+    util.write_json("reminds.json", {"reminds": endreminds})
     return
 
 async def punishments():
     bancache = {}
-    punishments = read_json("punishments.json")["punishments"]
+    punishments = util.read_json("punishments.json")["punishments"]
     now = datetime.now()
     endpunishments = []
     for i in punishments:
@@ -66,17 +66,17 @@ async def punishments():
                               i["hour"], i["minute"], 0, 0)
         if now > punishtime:
             if i["type"] == "mute":
-                await sendDmEmbed(member, config.UNMUTEMSG)
-                await log(member, guild, "Unmute", "'s mute has expired!")
+                await util.sendDmEmbed(member, config.UNMUTEMSG)
+                await util.log(member, guild, "Unmute", "'s mute has expired!")
                 muterole = guild.get_role()
                 await member.remove_roles(muterole)
 
             elif i["type"] == "ban":
-                await log(member, guild, "Unban", "'s ban has expired!")
+                await util.log(member, guild, "Unban", "'s ban has expired!")
                 await member.unban(reason="Ban expired.")
         else:
             endpunishments.append(i)
-    write_json("punishments.json", {"punishments": endpunishments})
+    util.write_json("punishments.json", {"punishments": endpunishments})
     return
 
 async def membercount():
@@ -95,7 +95,6 @@ async def tick():
 
     await reminds()
     await punishments()
-    await membercount()
 
     return
 
@@ -103,8 +102,8 @@ async def tick():
 @client.event
 async def on_ready():
     print("Bot is ready, " + client.user.name)
-    await client.change_presence(status=Status.online,
-                                 activity=Game(config.STATUS))
+    await client.change_presence(status=discord.Status.online,
+                                 activity=discord.Game(config.STATUS))
     #await tick()
     await membercount()
     tick.start()
@@ -194,8 +193,8 @@ async def on_raw_reaction_remove(payload):
 @client.event
 async def on_member_join(member):
     guild = member.guild
-    await sendDmEmbed(member, config.WELCOMEMSG)
-    reminds = read_json("reminds.json")["reminds"]
+    await util.sendDmEmbed(member, config.WELCOMEMSG)
+    reminds = util.read_json("reminds.json")["reminds"]
     reminder = datetime.now() + timedelta(hours=24)
     reminds.append({"year": reminder.year, 
                     "month": reminder.month,
@@ -205,8 +204,8 @@ async def on_member_join(member):
                     "userid": member.id,
                     "guild": guild.id,
                     "status": 0})
-    write_json("reminds.json", {"reminds": reminds})
-    punishments = read_json("punishments.json")["punishments"]
+    util.write_json("reminds.json", {"reminds": reminds})
+    punishments = util.read_json("punishments.json")["punishments"]
     for i in punishments:
         if i["userid"] == member.id and i["type"] == "mute":
             await member.add_roles(guild.get_role(config.MUTEDROLE),
@@ -214,17 +213,19 @@ async def on_member_join(member):
             break
     await member.add_roles(guild.get_role(config.UNVERIFIEDROLE),
                            reason="Joined the server.")
+    await membercount()
     return
 
 
 @client.event
 async def on_member_remove(member):
-    reminds = read_json("reminds.json")["reminds"]
+    reminds = util.read_json("reminds.json")["reminds"]
     endreminds = []
     for i in reminds:
         if i["userid"] != member.id:
            endreminds.append(i)
-    write_json("reminds.json", {"reminds": endreminds})
+    util.write_json("reminds.json", {"reminds": endreminds})
+    await membercount()
     return
 
 

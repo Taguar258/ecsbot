@@ -1,6 +1,6 @@
-from discord import *
+import discord
 from config import config
-from util import *
+import util
 from datetime import datetime, timedelta
 
 
@@ -9,16 +9,16 @@ async def purge(author, channel, guild, args):
     await channel.send("Purging, please wait...")
 
     for i in guild.channels:
-        if i.type == ChannelType.text:
+        if i.type == discord.ChannelType.text:
             await i.purge(check=lambda m: m.author.id == int(args[0]))
     
-    await log(author, guild, "Purge", " has purged all messages from <@" + args[0] + ">")
+    await util.log(author, guild, "Purge", " has purged all messages from <@" + args[0] + ">")
 
     await channel.send("Done, if not all messages were affected re-do!")
 
 
 async def verify(author, channel, guild, args):
-    member = await parse_member(args, guild)
+    member = await util.parse_member(args, guild)
     if member == None:
         await channel.send("Please supply a valid mention or ID.")
         return
@@ -33,44 +33,47 @@ async def verify(author, channel, guild, args):
                                 reason="Verified by a moderator.")
 
     await channel.send("Successfully verified " + member.mention + "!")
-    await log(author, guild, "Verification", " has verified " + member.mention)
+    await util.log(author, guild, "Verification", " has verified " + member.mention)
 
-    reminds = read_json("reminds.json")["reminds"]
+    reminds = util.read_json("reminds.json")["reminds"]
     endreminds = []
 
     for i in reminds:
         if i["userid"] != int(args[0]):
             endreminds.append(i)
 
-    write_json("reminds.json", {"reminds": endreminds})
+    util.write_json("reminds.json", {"reminds": endreminds})
 
 
 async def vpurge(author, channel, guild, args):
     category = guild.get_channel(config.VERIFICATIONCHANNELCAT)
 
     for i in category.channels:
-        if i.type == ChannelType.text and i.name == config.VERIFICATIONCHANNELNAME:
+        if i.type == discord.ChannelType.text and i.name == config.VERIFICATIONCHANNELNAME:
             await i.delete()
 
     overwrites = {
         guild.get_role(config.UNVERIFIEDROLE): 
-            PermissionOverwrite(read_messages=True, 
-                                send_messages=True, 
-                                read_message_history=True),
+            discord.PermissionOverwrite(read_messages=True, 
+                                        send_messages=True, 
+                                        read_message_history=True),
         guild.get_role(config.STAFFROLE): 
-            PermissionOverwrite(read_messages=True, 
-                                send_messages=True, 
-                                read_message_history=True),
+            discord.PermissionOverwrite(read_messages=True, 
+                                        send_messages=True, 
+                                        read_message_history=True),
         guild.get_role(config.VERIFIEDROLE): 
-            PermissionOverwrite(read_messages=False, 
-                                send_messages=False, 
-                                read_message_history=False),
+            discord.PermissionOverwrite(read_messages=False, 
+                                        send_messages=False, 
+                                        read_message_history=False),
     }
     vchannel = await guild.create_text_channel(config.VERIFICATIONCHANNELNAME, 
                                                 category=category,
-                                                overwrites=overwrites)
+                                                overwrites=overwrites,
+                                                topic="Verify yourself to get access to the" \
+                                                      "other channels and be able to communicate" \
+                                                      "with others.")
     await vchannel.send(config.VERIFICATIONCHANNELMESSAGE)
-    await log(author, guild, "Verification Purge", " has purged the #verification channel!")
+    await util.log(author, guild, "Verification Purge", " has purged the #verification channel!")
     await channel.send("Successfully purged the verification channel!")
 
 
@@ -80,14 +83,14 @@ async def reject(author, channel, guild, args):
         return
 
     member = guild.get_member(int(args[0]))
-    await sendDmEmbed(member, config.DENIEDMSG)
+    await util.sendDmEmbed(member, config.DENIEDMSG)
     await member.ban(reason="Verification denied by a moderator.")
-    await log(author, guild, "Reject", " has rejected " + member.mention)
+    await util.log(author, guild, "Reject", " has rejected " + member.mention)
     await channel.send("Successfully denied " + member.mention + "!")
 
 
 async def whois(channel, guild, args):
-    member = await parse_member(args, guild)
+    member = await util.parse_member(args, guild)
     if member == None:
         await channel.send("Please supply a valid mention or ID.")
         return
@@ -114,12 +117,12 @@ async def whois(channel, guild, args):
 async def ban(author, channel, guild, args):
     fullname = author.name + "#" + author.discriminator
 
-    member = await parse_member(args, guild)
+    member = await util.parse_member(args, guild)
     if member == None:
         await channel.send("Please supply a valid mention or ID.")
         return
 
-    punishments = read_json("punishments.json")["punishments"]
+    punishments = util.read_json("punishments.json")["punishments"]
     for i in punishments:
         if i["userid"] == member.id and i["type"] == "ban":
             await channel.send("This User is already banned!")
@@ -153,9 +156,9 @@ async def ban(author, channel, guild, args):
                     value=reason)
     embed.add_field(name="Duration", 
                     value=timestr)
-    await sendDmEmbed(member, embed)
+    await util.sendDmEmbed(member, embed)
 
-    await log(author, guild, "Ban", " has banned " + member.mention + " for " +
+    await util.log(author, guild, "Ban", " has banned " + member.mention + " for " +
                               timestr + ". Reason: " + reason)
     await member.ban(reason="Banned by " + fullname)
 
@@ -168,10 +171,10 @@ async def ban(author, channel, guild, args):
                         "userid": member.id,
                         "guild": guild.id,
                         "type": "ban"})
-    write_json("punishments.json", {"punishments": punishments})
+    util.write_json("punishments.json", {"punishments": punishments})
 
     now = datetime.now()
-    logs = read_json("logs.json")["logs"]
+    logs = util.read_json("logs.json")["logs"]
     logs.append({"year": now.year, 
                  "month": now.month,
                  "day": now.day, 
@@ -182,7 +185,7 @@ async def ban(author, channel, guild, args):
                  "duration": args[1],
                  "reason": reason,
                  "type": "ban"})
-    write_json("logs.json", {"logs": logs})
+    util.write_json("logs.json", {"logs": logs})
 
 
     await channel.send("Successfully banned " + member.mention + "!")
@@ -191,12 +194,12 @@ async def ban(author, channel, guild, args):
 async def mute(author, channel, guild, args):
     fullname = author.name + "#" + author.discriminator
 
-    member = await parse_member(args, guild)
+    member = await util.parse_member(args, guild)
     if member == None:
         await channel.send("Please supply a valid mention or ID.")
         return
 
-    punishments = read_json("punishments.json")["punishments"]
+    punishments = util.read_json("punishments.json")["punishments"]
     for i in punishments:
         if i["userid"] == member.id:
             await channel.send("This User is already muted!")
@@ -230,9 +233,9 @@ async def mute(author, channel, guild, args):
                     value=reason)
     embed.add_field(name="Duration", 
                     value=timestr)
-    await sendDmEmbed(member, embed)
+    await util.sendDmEmbed(member, embed)
 
-    await log(author, guild, "Mute", " has muted " + member.mention + " for " +
+    await util.log(author, guild, "Mute", " has muted " + member.mention + " for " +
                                timestr + ". Reason: " + reason)
     muterole = guild.get_role(config.MUTEDROLE)
     await member.add_roles(muterole, reason="Muted by " + fullname)
@@ -246,10 +249,10 @@ async def mute(author, channel, guild, args):
                         "userid": member.id,
                         "guild": guild.id,
                         "type": "mute"})
-    write_json("punishments.json", {"punishments": punishments})
+    util.write_json("punishments.json", {"punishments": punishments})
 
     now = datetime.now()
-    logs = read_json("logs.json")["logs"]
+    logs = util.read_json("logs.json")["logs"]
     logs.append({"year": now.year, 
                  "month": now.month,
                  "day": now.day, 
@@ -260,41 +263,41 @@ async def mute(author, channel, guild, args):
                  "duration": args[1],
                  "reason": reason,
                  "type": "mute"})
-    write_json("logs.json", {"logs": logs})
+    util.write_json("logs.json", {"logs": logs})
 
     await channel.send("Successfully muted " + member.mention + "!")
 
 
 async def unban(author, channel, guild, args):
     fullname = author.name + "#" + author.discriminator
-    member = await parse_member_banlist(args, guild)
+    member = await util.parse_member_banlist(args, guild)
     if member == None:
         await channel.send("Please supply a valid mention or ID of a banned user.")
         return
     
-    await log(author, guild, "Unban", " has unbanned " + member.mention)
+    await util.log(author, guild, "Unban", " has unbanned " + member.mention)
     await member.unban(reason="Unbanned by " + fullname)
     
-    punishments = read_json("punishments.json")["punishments"]
+    punishments = util.read_json("punishments.json")["punishments"]
     endpunishments = []
     for i in punishments:
         if i["userid"] != member.id or i["type"] != "ban":
             endpunishments.append(i)
-    write_json("punishments.json", {"punishments": endpunishments})
+    util.write_json("punishments.json", {"punishments": endpunishments})
     await channel.send("Successfully unbanned " + member.mention + "!")
 
 
 async def unmute(author, channel, guild, args):
     fullname = author.name + "#" + author.discriminator
 
-    member = await parse_member(args, guild)
+    member = await util.parse_member(args, guild)
     if member == None:
         await channel.send("Please supply a valid mention or ID.")
         return
 
     muted = False
 
-    punishments = read_json("punishments.json")["punishments"]
+    punishments = util.read_json("punishments.json")["punishments"]
 
     for i in punishments:
         if i["userid"] == member.id and i["type"] == "mute":
@@ -304,8 +307,8 @@ async def unmute(author, channel, guild, args):
         await channel.send("This user isnt muted " + member.mention + "!")
         return
 
-    await sendDmEmbed(member, config.UNMUTEMSG)
-    await log(author, guild, "Unmute", " has unmuted " + member.mention)
+    await util.sendDmEmbed(member, config.UNMUTEMSG)
+    await util.log(author, guild, "Unmute", " has unmuted " + member.mention)
     muterole = guild.get_role(config.MUTEDROLE)
     await member.remove_roles(muterole, reason="Unmuted by " + fullname)
 
@@ -313,12 +316,12 @@ async def unmute(author, channel, guild, args):
     for i in punishments:
         if i["userid"] != member.id or i["type"] != "mute":
             endpunishments.append(i)
-    write_json("punishments.json", {"punishments": endpunishments})
+    util.write_json("punishments.json", {"punishments": endpunishments})
     await channel.send("Successfully unmuted " + member.mention + "!")
 
 
 async def warn(author, channel, guild, args):
-    member = await parse_member(args, guild)
+    member = await util.parse_member(args, guild)
     if member == None:
         await channel.send("Please supply a valid mention or ID.")
         return
@@ -330,7 +333,7 @@ async def warn(author, channel, guild, args):
         reason += " "
 
     now = datetime.now()
-    logs = read_json("logs.json")["logs"]
+    logs = util.read_json("logs.json")["logs"]
     logs.append({"year": now.year, 
                  "month": now.month,
                  "day": now.day, 
@@ -340,14 +343,14 @@ async def warn(author, channel, guild, args):
                  "guild": guild.id,
                  "reason": reason,
                  "type": "warn"})
-    write_json("logs.json", {"logs": logs})
+    util.write_json("logs.json", {"logs": logs})
 
     embed = config.WARNMSG
     embed.add_field(name="Reason", 
                     value=reason)
-    await sendDmEmbed(member, embed)
+    await util.sendDmEmbed(member, embed)
 
-    await log(author, guild, "Warn", " has warned " + member.mention + 
+    await util.log(author, guild, "Warn", " has warned " + member.mention + 
                              ". Reason: " + reason)
 
     await channel.send("Successfully warned " + member.mention + "!")
@@ -355,7 +358,7 @@ async def warn(author, channel, guild, args):
 
 
 async def infractions(author, channel, guild, args):
-    member = await parse_member(args, guild)
+    member = await util.parse_member(args, guild)
     if member == None:
         await channel.send("Please supply a valid mention or ID.")
         return
@@ -365,7 +368,7 @@ async def infractions(author, channel, guild, args):
 
     embed = discord.Embed(title=fullname, color=0x57008b)
 
-    logs = read_json("logs.json")["logs"]
+    logs = util.read_json("logs.json")["logs"]
 
     for i in logs:
         if i["userid"] == member.id:
