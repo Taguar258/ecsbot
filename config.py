@@ -7,6 +7,8 @@ class ProductionEnv:
     TOKEN = tokens.TOKEN
     PREFIX = "/"
 
+    COLOR = 0x57008b
+
     STATUS = "Ethical Computing Society!"
 
     # ID of the Guild.
@@ -61,25 +63,27 @@ If a mod is online but doesn't see your message in #verification, you can ping t
 
     # Discord Embeds for Reminders and various other warnings.
     WELCOMEMSG = Embed(title="Ethical Computing Society", 
-                            description="Welcome to the Ethical Computing Society! To be able to chat, verify yourself in #verification!", color=0x57008b)
+                            description="Welcome to the Ethical Computing Society! To be able to chat, verify yourself in #verification!", color=COLOR)
     REMINDERMSG = Embed(title="Ethical Computing Society", 
-                            description="We've seen that you didn't verify yet! To verify yourself in #verification!", color=0x57008b)
+                            description="We've seen that you didn't verify yet! To verify yourself in #verification!", color=COLOR)
     KICKMSG = Embed(title="Ethical Computing Society", 
-                            description="We're sorry, but you didn't verify yourself and we had to kick you. You can always rejoin if you want to come back!", color=0x57008b)
+                            description="We're sorry, but you didn't verify yourself and we had to kick you. You can always rejoin if you want to come back!", color=COLOR)
     DENIEDMSG = Embed(title="Ethical Computing Society",
-                            description="We're sorry, but we suspect you'd break one of our Rules on the server, so we couldn't verify you. You can appeal this at banappeal@sw1tchbl4d3.com", color=0x57008b)
+                            description="We're sorry, but we suspect you'd break one of our Rules on the server, so we couldn't verify you. You can appeal this at banappeal@sw1tchbl4d3.com", color=COLOR)
     UNMUTEMSG = Embed(title="Ethical Computing Society",
-                            description="We're happy to notify you that you have been unmuted! Get chatting!", color=0x57008b)
+                            description="We're happy to notify you that you have been unmuted! Get chatting!", color=COLOR)
     MUTEMSG = Embed(title="Ethical Computing Society",
-                            description="We're sorry, but you have been muted for violating one of our rules. You can appeal this in the #muteappeal channel!", color=0x57008b)
+                            description="We're sorry, but you have been muted for violating one of our rules. You can appeal this in the #muteappeal channel!", color=COLOR)
     BANMSG = Embed(title="Ethical Computing Society",
-                            description="We're sorry, but you have been banned for violating one of our rules. You can appeal this at banappeal@sw1tchbl4d3.com", color=0x57008b)
+                            description="We're sorry, but you have been banned for violating one of our rules. You can appeal this at banappeal@sw1tchbl4d3.com", color=COLOR)
     WARNMSG = Embed(title="Ethical Computing Society",
-                            description="We're sorry, but you have been warned for violating one of our rules.", color=0x57008b)
+                            description="We're sorry, but you have been warned for violating one of our rules.", color=COLOR)
 
 class TestingEnv:
     TOKEN = tokens.TOKENTESTING
     PREFIX = "/"
+
+    COLOR = 0x57008b
 
     STATUS = "ECS - TESTING!"
 
@@ -91,9 +95,9 @@ class TestingEnv:
     MUTEDROLE = 776900473391022101
 
     ROLES = {b"8J+UlA==": ["ping", 776900472358305833],
-            b"4oyo77iP": ["coder", 776900472086331452],
-            b"8J+Suw==": ["hacker", 776900471004594188],
-            b"8J+Upw==": ["hardware", 776900470601154580]}
+             b"4oyo77iP": ["coder", 776900472086331452],
+             b"8J+Suw==": ["hacker", 776900471004594188],
+             b"8J+Upw==": ["hardware", 776900470601154580]}
 
     VERIFICATIONCHANNELCAT = 776900479946194955
     VERIFICATIONCHANNELNAME = "verification"

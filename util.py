@@ -28,7 +28,7 @@ async def log(author, guild, title, message):
     channel = guild.get_channel(config.LOGCHANNEL)
     embed = Embed(title=title, 
                   description=author.mention + " " + message,
-                  color=0x57008b)
+                  color=config.COLOR)
     await channel.send(embed=embed)
     return
 

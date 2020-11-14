@@ -99,7 +99,7 @@ async def whois(channel, guild, args):
     joinedstrf = member.joined_at.strftime("%d/%m/%Y %H:%M:%S")
     createdstrf = member.created_at.strftime("%d/%m/%Y %H:%M:%S")
 
-    embed = discord.Embed(title=fullname, color=0x57008b)
+    embed = discord.Embed(title=fullname, color=config.COLOR)
 
     embed.add_field(name="Nick", 
                     value=member.display_name, inline=True)
@@ -112,12 +112,12 @@ async def whois(channel, guild, args):
 
     await channel.send(embed=embed)
 
+
 async def ping(channel, ping):
-    embed = discord.Embed(title="Ping", color=0x57008b)
+    embed = discord.Embed(title="Ping", color=config.COLOR)
 
     embed.add_field(name="API", value=str(round(ping*1000)) + "ms", inline=True)
     await channel.send(embed=embed)
-
 
 
 async def ban(author, channel, guild, args):
@@ -372,7 +372,7 @@ async def infractions(author, channel, guild, args):
     fullname = member.name + "#" + member.discriminator
 
 
-    embed = discord.Embed(title=fullname, color=0x57008b)
+    embed = discord.Embed(title=fullname, color=config.COLOR)
 
     logs = util.read_json("data/logs.json")["logs"]
 
