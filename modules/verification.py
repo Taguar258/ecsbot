@@ -26,18 +26,18 @@ async def verify(author, channel, guild, args):
     endreminds = []
 
     for i in reminds:
-        if i["userid"] != int(args[0]):
+        if i["userid"] != member.id:
             endreminds.append(i)
 
     util.write_json("data/reminds.json", {"reminds": endreminds})
 
 
 async def reject(author, channel, guild, args):
-    if len(args) == 0 or not args[0].isdigit():
-        await channel.send("Please supply a valid ID.")
+    member = await util.parse_member(args, guild)
+    if member == None:
+        await channel.send("Please supply a valid mention or ID.")
         return
 
-    member = guild.get_member(int(args[0]))
     await util.sendDmEmbed(member, config.DENIEDMSG)
     await member.ban(reason="Verification denied by a moderator.")
     await util.log(author, guild, "Reject", " has rejected " + member.mention)

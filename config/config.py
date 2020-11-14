@@ -66,7 +66,7 @@ If a mod is online but doesn't see your message in #verification, you can ping t
                             description="Welcome to the Ethical Computing Society! To be able to chat, verify yourself in #verification!", color=COLOR)
     REMINDERMSG = Embed(title="Ethical Computing Society", 
                             description="We've seen that you didn't verify yet! To verify yourself in #verification!", color=COLOR)
-    KICKMSG = Embed(title="Ethical Computing Society", 
+    REMINDKICKMSG = Embed(title="Ethical Computing Society", 
                             description="We're sorry, but you didn't verify yourself and we had to kick you. You can always rejoin if you want to come back!", color=COLOR)
     DENIEDMSG = Embed(title="Ethical Computing Society",
                             description="We're sorry, but we suspect you'd break one of our Rules on the server, so we couldn't verify you. You can appeal this at banappeal@sw1tchbl4d3.com", color=COLOR)

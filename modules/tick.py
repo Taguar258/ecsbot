@@ -25,7 +25,8 @@ async def reminds(client):
                                    "guild": i["guild"],
                                    "status": i["status"] + 1})
             else:
-                await util.sendDmEmbed(member, config.KICKMSG)
+                await util.log(member, guild, "Kick", "has been kicked for not verifying in time.")
+                await util.sendDmEmbed(member, config.REMINDKICKMSG)
                 print("Kicked",i["userid"],i["status"])
                 try:
                     await member.kick(reason="Didn't verify.")
