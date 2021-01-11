@@ -8,7 +8,6 @@ import util
 from config.config import config
 from discord.ext import tasks
 from modules import exec_command
-from modules.iss import iss_info
 
 # import modules.moderation as moderation
 # import modules.verification as verification
@@ -74,9 +73,6 @@ async def on_message(message):
         command = args[0].lower()
         args.pop(0)
         await exec_command(message.author, message.channel, command, args, message.guild, client.latency, message, client)
-
-    elif message.content.startswith("?iss"):
-        await iss_info(message)
 
     return
 

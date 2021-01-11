@@ -8,7 +8,7 @@ class ProductionEnv:
     TOKEN = tokens.TOKEN
     PREFIX = "/"
 
-    COLOR = 0x57008b
+    COLOR = 0x57408b
 
     STATUS = "Ethical Computing Society!"
 
@@ -123,7 +123,7 @@ class TestingEnv:
     TOKEN = tokens.TOKENTESTING
     PREFIX = "/"
 
-    COLOR = 0x57008b
+    COLOR = 0x57408b
 
     STATUS = "ECS - TESTING!"
 
