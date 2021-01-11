@@ -238,18 +238,18 @@ async def on_member_update(before, after):
 
     elif len(before.roles) > len(after.roles):
 
-        for role in after.roles:
+        for role in before.roles:
 
-            if role not in before.roles:
+            if role not in after.roles:
 
-                added_role = role
+                removed_role = role
 
         channel = client.get_channel(config.LOGCHANNEL)
 
         date = datetime.now().strftime("%d.%m.%Y")
 
         full_name = f"{after.name}#{after.discriminator}"
-        full_title = f"**The** `{added_role.name}` **role was removed from** <@{after.id}>"
+        full_title = f"**The** `{removed_role.name}` **role was removed from** <@{after.id}>"
         footer = f"ID: {after.id} • {date}"
 
         embed = discord.Embed(description=full_title, color=config.COLOR)

@@ -102,7 +102,7 @@ async def new_help(author, channel, guild, args, message, client):
         return
 
     for check_channel in client.get_channel(category).channels:
-        if int(check_channel.topic) == author.id:
+        if check_channel.topic == str(author.id):
             await tmp_msg("You are only allowed to have one public help channel.", channel)
             return
 
@@ -171,7 +171,7 @@ async def close_help(author, channel, guild, args, message, client):
 
     delete_channel = client.get_channel(delete_channel_id)
 
-    if int(delete_channel.topic) == author.id:
+    if delete_channel.topic == str(author.id):
         await delete_channel.delete(reason="Help channel deletion requested.")
     else:
         await tmp_msg("Fatal Exception author id does not match.", channel)
