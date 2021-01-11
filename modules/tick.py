@@ -1,6 +1,8 @@
+from datetime import datetime, timedelta
+
 import util
 from config.config import config
-from datetime import datetime, timedelta
+
 
 async def reminds(client):
     reminds = util.read_json("data/reminds.json")["reminds"]
@@ -14,20 +16,20 @@ async def reminds(client):
         if now > reminder:
             if i["status"] in [0, 1]:
                 await util.sendDmEmbed(member, config.REMINDERMSG)
-                print("Reminded",i["userid"],i["status"])
+                print("Reminded", i["userid"], i["status"])
                 newremind = reminder + timedelta(hours=24)
-                endreminds.append({"year": newremind.year, 
+                endreminds.append({"year": newremind.year,
                                    "month": newremind.month,
-                                   "day": newremind.day, 
+                                   "day": newremind.day,
                                    "hour": newremind.hour,
-                                   "minute": newremind.minute, 
+                                   "minute": newremind.minute,
                                    "userid": i["userid"],
                                    "guild": i["guild"],
                                    "status": i["status"] + 1})
             else:
                 await util.log(member, guild, "Kick", "has been kicked for not verifying in time.")
                 await util.sendDmEmbed(member, config.REMINDKICKMSG)
-                print("Kicked",i["userid"],i["status"])
+                print("Kicked", i["userid"], i["status"])
                 try:
                     await member.kick(reason="Didn't verify.")
                 except AttributeError:
@@ -36,6 +38,7 @@ async def reminds(client):
             endreminds.append(i)
     util.write_json("data/reminds.json", {"reminds": endreminds})
     return
+
 
 async def punishments(client):
     bancache = {}
@@ -67,3 +70,29 @@ async def punishments(client):
             endpunishments.append(i)
     util.write_json("data/punishments.json", {"punishments": endpunishments})
     return
+
+
+async def public_help(client):
+
+    phelp_data = util.read_json("data/public_help.json")["current_channels"]
+    freeze = util.read_json("data/public_help.json")["freeze"]
+
+    for block in phelp_data:
+
+        channel = client.get_channel(block["channel"])
+        fetchMessage = await channel.history(limit=4).flatten()
+        now = datetime.utcnow()
+        delta = now - fetchMessage[0].created_at
+
+        if delta.days >= config.PHELP_REMEMBER_AFTER_DAY and fetchMessage[0].author.id != client.user.id:
+            await channel.send(f"Hey <@{block['user_id']}>, this channel will be automatically deleted in 2 days if not used by then.")
+
+        elif delta.days >= config.PHELP_DELETE_AFTER_DAY and fetchMessage[0].author.id == client.user.id:
+            # Delete Channel #
+            end_data = []
+            for block in phelp_data:
+                if block["channel"] != fetchMessage[0].channel.id:
+                    end_data.append(block)
+
+            await channel.delete()
+            util.write_json("data/public_help.json", {"current_channels": end_data, "freeze": freeze})

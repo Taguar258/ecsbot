@@ -1,15 +1,15 @@
 import json
-from discord import errors, Embed
 import os
 
 from config.config import config
+from discord import Embed, errors
 
 
 async def sendDmEmbed(member, embed):
     try:
         await member.send(embed=embed)
     except (errors.Forbidden, AttributeError):
-        pass # dms disabled
+        pass  # dms disabled
     return
 
 
@@ -27,7 +27,7 @@ def read_json(filename):
 
 async def log(author, guild, title, message):
     channel = guild.get_channel(config.LOGCHANNEL)
-    embed = Embed(title=title, 
+    embed = Embed(title=title,
                   description=author.mention + " " + message,
                   color=config.COLOR)
     await channel.send(embed=embed)
@@ -82,10 +82,13 @@ async def parse_member_banlist(args, guild):
         if i.user.id == userid:
             return i.user
 
+    return None
+
+
 def init_data():
     if not os.path.isdir("data"):
         os.mkdir("data")
         write_json("data/logs.json", {"logs": []})
         write_json("data/punishments.json", {"punishments": []})
         write_json("data/reminds.json", {"reminds": []})
-    return 
+    return

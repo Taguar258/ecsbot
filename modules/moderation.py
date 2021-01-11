@@ -1,8 +1,8 @@
-import discord
 from datetime import datetime, timedelta
 
-from config.config import config
+import discord
 import util
+from config.config import config
 
 
 async def purge(author, channel, guild, args):
@@ -16,7 +16,7 @@ async def purge(author, channel, guild, args):
     for i in guild.channels:
         if i.type == discord.ChannelType.text:
             await i.purge(check=lambda m: m.author.id == int(args[0]))
-    
+
     await util.log(author, guild, "Purge", " has purged all messages from <@" + args[0] + ">")
 
     await channel.send("Done, if not all messages were affected re-do!")
@@ -26,7 +26,7 @@ async def ban(author, channel, guild, args):
     fullname = author.name + "#" + author.discriminator
 
     member = await util.parse_member(args, guild)
-    if member == None:
+    if member is None:
         await channel.send("Please supply a valid mention or ID.")
         return
 
@@ -37,15 +37,15 @@ async def ban(author, channel, guild, args):
             return
 
     strtotimestr = {"1d": "1 day", "7d": "7 days", "30d": "30 days",
-                    "perma": "permanently", "permanent": "permanently", 
+                    "perma": "permanently", "permanent": "permanently",
                     "permanently": "permanently"}
     strtotimemin = {"1d": 1440, "7d": 10080, "30d": 43200, "perma": 999999999}
 
-    if len(args) == 1 or args[1] not in  strtotimemin.keys():
+    if len(args) == 1 or args[1] not in strtotimemin.keys():
         await channel.send("Invalid or no time period specified" +
                      "\n(1d, 7d, 30d, perma)")
         return
-    
+
     timestr = strtotimestr[args[1]]
     time_in_minutes = strtotimemin[args[1]]
 
@@ -56,13 +56,13 @@ async def ban(author, channel, guild, args):
     reason = ""
 
     for i in args[2:]:
-        reason += i 
+        reason += i
         reason += " "
 
     embed = config.BANMSG
-    embed.add_field(name="Reason", 
+    embed.add_field(name="Reason",
                     value=reason)
-    embed.add_field(name="Duration", 
+    embed.add_field(name="Duration",
                     value=timestr)
     await util.sendDmEmbed(member, embed)
 
@@ -71,11 +71,11 @@ async def ban(author, channel, guild, args):
     await member.ban(reason="Banned by " + fullname)
 
     endtime = datetime.utcnow() + timedelta(minutes=time_in_minutes)
-    punishments.append({"year": endtime.year, 
+    punishments.append({"year": endtime.year,
                         "month": endtime.month,
-                        "day": endtime.day, 
+                        "day": endtime.day,
                         "hour": endtime.hour,
-                        "minute": endtime.minute, 
+                        "minute": endtime.minute,
                         "userid": member.id,
                         "guild": guild.id,
                         "type": "ban"})
@@ -83,11 +83,11 @@ async def ban(author, channel, guild, args):
 
     now = datetime.utcnow()
     logs = util.read_json("data/logs.json")["logs"]
-    logs.append({"year": now.year, 
+    logs.append({"year": now.year,
                  "month": now.month,
-                 "day": now.day, 
+                 "day": now.day,
                  "hour": now.hour,
-                 "minute": now.minute, 
+                 "minute": now.minute,
                  "userid": member.id,
                  "guild": guild.id,
                  "duration": args[1],
@@ -95,14 +95,14 @@ async def ban(author, channel, guild, args):
                  "type": "ban"})
     util.write_json("data/logs.json", {"logs": logs})
 
-
     await channel.send("Successfully banned " + member.mention + "!")
+
 
 async def mute(author, channel, guild, args):
     fullname = author.name + "#" + author.discriminator
 
     member = await util.parse_member(args, guild)
-    if member == None:
+    if member is None:
         await channel.send("Please supply a valid mention or ID.")
         return
 
@@ -112,8 +112,8 @@ async def mute(author, channel, guild, args):
             await channel.send("This User is already muted!")
             return
 
-    strtotimestr = {"30m": "30 minutes", "1d": "1 day", "7d": "7 days", 
-                    "perma": "permanently", "permanent": "permanently", 
+    strtotimestr = {"30m": "30 minutes", "1d": "1 day", "7d": "7 days",
+                    "perma": "permanently", "permanent": "permanently",
                     "permanently": "permanently"}
     strtotimemin = {"30m": 30, "1d": 1440, "7d": 10080, "perma": 999999999}
 
@@ -121,7 +121,7 @@ async def mute(author, channel, guild, args):
         await channel.send("Invalid or no time period specified" +
                      "\n(30m, 1d, 7d, perma)")
         return
-    
+
     timestr = strtotimestr[args[1]]
     time_in_minutes = strtotimemin[args[1]]
 
@@ -132,13 +132,13 @@ async def mute(author, channel, guild, args):
     reason = ""
 
     for i in args[2:]:
-        reason += i 
+        reason += i
         reason += " "
 
     embed = config.MUTEMSG
-    embed.add_field(name="Reason", 
+    embed.add_field(name="Reason",
                     value=reason)
-    embed.add_field(name="Duration", 
+    embed.add_field(name="Duration",
                     value=timestr)
     await util.sendDmEmbed(member, embed)
 
@@ -148,11 +148,11 @@ async def mute(author, channel, guild, args):
     await member.add_roles(muterole, reason="Muted by " + fullname)
 
     endtime = datetime.utcnow() + timedelta(minutes=time_in_minutes)
-    punishments.append({"year": endtime.year, 
+    punishments.append({"year": endtime.year,
                         "month": endtime.month,
-                        "day": endtime.day, 
+                        "day": endtime.day,
                         "hour": endtime.hour,
-                        "minute": endtime.minute, 
+                        "minute": endtime.minute,
                         "userid": member.id,
                         "guild": guild.id,
                         "type": "mute"})
@@ -160,11 +160,11 @@ async def mute(author, channel, guild, args):
 
     now = datetime.utcnow()
     logs = util.read_json("data/logs.json")["logs"]
-    logs.append({"year": now.year, 
+    logs.append({"year": now.year,
                  "month": now.month,
-                 "day": now.day, 
+                 "day": now.day,
                  "hour": now.hour,
-                 "minute": now.minute, 
+                 "minute": now.minute,
                  "userid": member.id,
                  "guild": guild.id,
                  "duration": args[1],
@@ -178,13 +178,13 @@ async def mute(author, channel, guild, args):
 async def unban(author, channel, guild, args):
     fullname = author.name + "#" + author.discriminator
     member = await util.parse_member_banlist(args, guild)
-    if member == None:
+    if member is None:
         await channel.send("Please supply a valid mention or ID of a banned user.")
         return
-    
+
     await util.log(author, guild, "Unban", " has unbanned " + member.mention)
     await member.unban(reason="Unbanned by " + fullname)
-    
+
     punishments = util.read_json("data/punishments.json")["punishments"]
     endpunishments = []
     for i in punishments:
@@ -193,11 +193,12 @@ async def unban(author, channel, guild, args):
     util.write_json("data/punishments.json", {"punishments": endpunishments})
     await channel.send("Successfully unbanned " + member.mention + "!")
 
+
 async def unmute(author, channel, guild, args):
     fullname = author.name + "#" + author.discriminator
 
     member = await util.parse_member(args, guild)
-    if member == None:
+    if member is None:
         await channel.send("Please supply a valid mention or ID.")
         return
 
@@ -208,7 +209,7 @@ async def unmute(author, channel, guild, args):
     for i in punishments:
         if i["userid"] == member.id and i["type"] == "mute":
             muted = True
-        
+
     if not muted:
         await channel.send("This user isnt muted " + member.mention + "!")
         return
@@ -228,7 +229,7 @@ async def unmute(author, channel, guild, args):
 
 async def warn(author, channel, guild, args):
     member = await util.parse_member(args, guild)
-    if member == None:
+    if member is None:
         await channel.send("Please supply a valid mention or ID.")
         return
 
@@ -239,16 +240,16 @@ async def warn(author, channel, guild, args):
         return
 
     for i in args[1:]:
-        reason += i 
+        reason += i
         reason += " "
 
     now = datetime.utcnow()
     logs = util.read_json("data/logs.json")["logs"]
-    logs.append({"year": now.year, 
+    logs.append({"year": now.year,
                  "month": now.month,
-                 "day": now.day, 
+                 "day": now.day,
                  "hour": now.hour,
-                 "minute": now.minute, 
+                 "minute": now.minute,
                  "userid": member.id,
                  "guild": guild.id,
                  "reason": reason,
@@ -256,11 +257,11 @@ async def warn(author, channel, guild, args):
     util.write_json("data/logs.json", {"logs": logs})
 
     embed = config.WARNMSG
-    embed.add_field(name="Reason", 
+    embed.add_field(name="Reason",
                     value=reason)
     await util.sendDmEmbed(member, embed)
 
-    await util.log(author, guild, "Warn", " has warned " + member.mention + 
+    await util.log(author, guild, "Warn", " has warned " + member.mention +
                              ". Reason: " + reason)
 
     await channel.send("Successfully warned " + member.mention + "!")
@@ -271,7 +272,7 @@ async def kick(author, channel, guild, args):
     fullname = author.name + "#" + author.discriminator
 
     member = await util.parse_member(args, guild)
-    if member == None:
+    if member is None:
         await channel.send("Please supply a valid mention or ID.")
         return
 
@@ -287,11 +288,11 @@ async def kick(author, channel, guild, args):
 
     now = datetime.utcnow()
     logs = util.read_json("data/logs.json")["logs"]
-    logs.append({"year": now.year, 
+    logs.append({"year": now.year,
                  "month": now.month,
-                 "day": now.day, 
+                 "day": now.day,
                  "hour": now.hour,
-                 "minute": now.minute, 
+                 "minute": now.minute,
                  "userid": member.id,
                  "guild": guild.id,
                  "reason": reason,
@@ -299,11 +300,11 @@ async def kick(author, channel, guild, args):
     util.write_json("data/logs.json", {"logs": logs})
 
     embed = config.KICKMSG
-    embed.add_field(name="Reason", 
+    embed.add_field(name="Reason",
                     value=reason)
     await util.sendDmEmbed(member, embed)
 
-    await util.log(author, guild, "Kick", " has kicked " + member.mention + 
+    await util.log(author, guild, "Kick", " has kicked " + member.mention +
                              ". Reason: " + reason)
 
     await member.kick(reason="Kicked by " + fullname)
@@ -314,13 +315,13 @@ async def kick(author, channel, guild, args):
 
 async def infractions(author, channel, guild, args):
     userid = await util.parse_id(args)
-    if userid == None:
+    if userid is None:
         await channel.send("Please supply a valid mention or ID.")
         return
 
     member = guild.get_member(userid)
 
-    if member == None:
+    if member is None:
         fullname = userid
     else:
         fullname = member.name + "#" + member.discriminator
@@ -332,18 +333,18 @@ async def infractions(author, channel, guild, args):
     for i in logs:
         if i["userid"] == userid:
             if i["type"] in ["warn", "kick"]:
-                embed.add_field(name=i["type"].capitalize(), 
-                                value=f"Time: {i['day']}/{i['month']}/{i['year']} " + 
+                embed.add_field(name=i["type"].capitalize(),
+                                value=f"Time: {i['day']}/{i['month']}/{i['year']} " +
                                     f"{i['hour']}:{i['minute']}\n" +
                                     f"Reason: {i['reason']}",
                                 inline=False)
             else:
-                embed.add_field(name=i["type"].capitalize(), 
-                                value=f"Time: {i['day']}/{i['month']}/{i['year']} " + 
+                embed.add_field(name=i["type"].capitalize(),
+                                value=f"Time: {i['day']}/{i['month']}/{i['year']} " +
                                     f"{i['hour']}:{i['minute']}\n" +
                                     f"Reason: {i['reason']}\n" +
-                                    f"Duration: {i['duration']}" ,
+                                    f"Duration: {i['duration']}",
                                 inline=False)
-    
+
     await channel.send(embed=embed)
     pass

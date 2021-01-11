@@ -1,7 +1,7 @@
 import discord
-
-from config.config import config
 import util
+from config.config import config
+
 
 async def membercount(client):
     guild = client.get_guild(config.GUILD)
@@ -16,7 +16,7 @@ async def membercount(client):
 
 async def whois(channel, guild, args):
     member = await util.parse_member(args, guild)
-    if member == None:
+    if member is None:
         await channel.send("Please supply a valid mention or ID.")
         return
 
@@ -26,13 +26,13 @@ async def whois(channel, guild, args):
 
     embed = discord.Embed(title=fullname, color=config.COLOR)
 
-    embed.add_field(name="Nick", 
+    embed.add_field(name="Nick",
                     value=member.display_name, inline=True)
-    embed.add_field(name="Username", 
+    embed.add_field(name="Username",
                     value=fullname, inline=True)
-    embed.add_field(name="Joined", 
+    embed.add_field(name="Joined",
                     value=joinedstrf, inline=False)
-    embed.add_field(name="Created", 
+    embed.add_field(name="Created",
                     value=createdstrf, inline=False)
 
     await channel.send(embed=embed)

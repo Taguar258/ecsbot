@@ -1,22 +1,21 @@
 import discord
-
-from config.config import config
 import util
+from config.config import config
 
 
 async def verify(author, channel, guild, args):
     member = await util.parse_member(args, guild)
-    if member == None:
+    if member is None:
         await channel.send("Please supply a valid mention or ID.")
         return
 
     verifiedrole = guild.get_role(config.VERIFIEDROLE)
     unverifiedrole = guild.get_role(config.UNVERIFIEDROLE)
 
-    await member.add_roles(verifiedrole, 
+    await member.add_roles(verifiedrole,
                             reason="Verified by a moderator.")
 
-    await member.remove_roles(unverifiedrole, 
+    await member.remove_roles(unverifiedrole,
                                 reason="Verified by a moderator.")
 
     await channel.send("Successfully verified " + member.mention + "!")
@@ -52,20 +51,20 @@ async def vpurge(author, channel, guild, args):
             await i.delete()
 
     overwrites = {
-        guild.get_role(config.UNVERIFIEDROLE): 
-            discord.PermissionOverwrite(read_messages=True, 
-                                        send_messages=True, 
+        guild.get_role(config.UNVERIFIEDROLE):
+            discord.PermissionOverwrite(read_messages=True,
+                                        send_messages=True,
                                         read_message_history=True),
-        guild.get_role(config.STAFFROLE): 
-            discord.PermissionOverwrite(read_messages=True, 
-                                        send_messages=True, 
+        guild.get_role(config.STAFFROLE):
+            discord.PermissionOverwrite(read_messages=True,
+                                        send_messages=True,
                                         read_message_history=True),
-        guild.get_role(config.VERIFIEDROLE): 
-            discord.PermissionOverwrite(read_messages=False, 
-                                        send_messages=False, 
+        guild.get_role(config.VERIFIEDROLE):
+            discord.PermissionOverwrite(read_messages=False,
+                                        send_messages=False,
                                         read_message_history=False),
     }
-    vchannel = await guild.create_text_channel(config.VERIFICATIONCHANNELNAME, 
+    vchannel = await guild.create_text_channel(config.VERIFICATIONCHANNELNAME,
                                                 category=category,
                                                 overwrites=overwrites,
                                                 topic="Verify yourself to get access to the " \
