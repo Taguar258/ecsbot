@@ -2,10 +2,15 @@ import modules.moderation as moderation
 import modules.other as other
 import modules.public_help as phelp
 import modules.verification as verification
+from modules.iss import iss_info
 from config.config import config
 
 
 async def exec_command(author, channel, command, args, guild, ping, message, client):
+
+    if command in ["space", "iss"]:
+        await iss_info(message)
+        return
 
     if command in ["channel", "help"]:
         if len(args) == 0:
