@@ -44,7 +44,7 @@ async def detect_dangerous_commands(message):
 **WARNING: Potentially harmful instructions:**
 
 ------------------------------------------
-||{message_content[:1024]}||
+||{message.content[:1024]}||
 ------------------------------------------
 *Click the spoiler above to see the original message, send by {full_name}.*
 
