@@ -8,6 +8,7 @@ import util
 from config.config import config
 from discord.ext import tasks
 from modules import exec_command
+from modules.message_detection import detect_dangerous_commands
 
 # import modules.moderation as moderation
 # import modules.verification as verification
@@ -20,16 +21,23 @@ intents.presences = False
 client = discord.Client(intents=intents)
 
 
-@tasks.loop(minutes=1)
-async def tickfunc():
+@tasks.loop(minutes=2)  # minutes=1
+async def punishments_tick():
 
-    await tick.reminds(client)
     await tick.punishments(client)
 
     return
 
 
-@tasks.loop(seconds=10)  # hours=1
+@tasks.loop(hours=2)  # minutes=1
+async def reminds_tick():
+
+    await tick.reminds(client)
+
+    return
+
+
+@tasks.loop(hours=1)  # seconds=10 / hours=1
 async def public_help_tick():
 
     await tick.public_help(client)
@@ -45,7 +53,8 @@ async def on_ready():
     util.init_data()
     # await tick()
     await other.membercount(client)
-    tickfunc.start()
+    punishments_tick.start()
+    reminds_tick.start()
     public_help_tick.start()
 
     return
@@ -65,6 +74,8 @@ async def welcome_message(member):
 async def on_message(message):
     if message.author == client.user:
         return
+
+    await detect_dangerous_commands(message)
 
     if message.content.startswith(config.PREFIX):
         args = message.content.strip(config.PREFIX).split(" ")
@@ -163,6 +174,8 @@ async def on_member_remove(member):
 async def on_message_edit(before, after):
 
     if not after.author.bot:
+
+        await detect_dangerous_commands(after)
 
         channel = client.get_channel(config.LOGCHANNEL)
 

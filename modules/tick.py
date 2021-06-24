@@ -14,7 +14,7 @@ async def reminds(client):
         reminder = datetime(i["year"], i["month"], i["day"],
                             i["hour"], i["minute"], 0, 0)
         if now > reminder:
-            if i["status"] in [0, 1]:
+            if i["status"] in [0, 1, 2]:  # [0, 1]
                 await util.sendDmEmbed(member, config.REMINDERMSG)
                 print("Reminded", i["userid"], i["status"])
                 newremind = reminder + timedelta(hours=24)
