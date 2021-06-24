@@ -11,7 +11,7 @@ class ProductionEnv:
     # General stuff
     TOKEN = tokens.TOKEN
 
-    PREFIX = "/"
+    PREFIX = "!"
 
     COLOR = 0x57408b
 
@@ -200,6 +200,9 @@ If a mod is online but doesn't see your message in #verification, you can ping t
 
     GREY_COMMANDS_COMBINED = "(" + ")|(".join(GREY_COMMANDS.keys()) + ")"
 
+    # Ignored Commands
+    IGNORED_COMMANDS = ["d"]
+
 
 class TestingEnv:
     """ Config for Production Environment
@@ -207,7 +210,7 @@ class TestingEnv:
 
     TOKEN = tokens.TOKENTESTING
 
-    PREFIX = "/"
+    PREFIX = "!"
 
     COLOR = 0x57408b
 
@@ -266,10 +269,12 @@ class TestingEnv:
 
     HELP_MESSAGE_USER = ProductionEnv.HELP_MESSAGE_USER
 
-    ISS_INFO_ENABLED = True
+    ISS_INFO_ENABLED = ProductionEnv.ISS_INFO_ENABLED
 
     GREY_COMMANDS = ProductionEnv.GREY_COMMANDS
     GREY_COMMANDS_COMBINED = ProductionEnv.GREY_COMMANDS_COMBINED
+
+    IGNORED_COMMANDS = ProductionEnv.IGNORED_COMMANDS
 
 
 if TESTING:
