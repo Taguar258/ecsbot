@@ -17,10 +17,10 @@ async def detect_dangerous_commands(message):
 
     """
 
-    message.content = sub(r"<.{1,2}\d*>", "", message.content)  # Pings trigger things ;)
+    message_content = sub(r"<.{1,2}\d*>", "", message.content)  # Pings trigger things ;)
 
     # Check for match
-    if search(config.GREY_COMMANDS_COMBINED, message.content, MULTILINE | IGNORECASE):  # Checking in advance as this decreases cpu usage
+    if search(config.GREY_COMMANDS_COMBINED, message_content, MULTILINE | IGNORECASE):  # Checking in advance as this decreases cpu usage
 
         # Delete message
         await message.delete()
@@ -28,7 +28,7 @@ async def detect_dangerous_commands(message):
         # Get reason
         for regex_id, (regex, reason) in enumerate(config.GREY_COMMANDS.items()):  # noqa: B007  # Takes time but identifies regex
 
-            if search(regex, message.content, MULTILINE | IGNORECASE):
+            if search(regex, message_content, MULTILINE | IGNORECASE):
 
                 break
 
@@ -40,11 +40,11 @@ async def detect_dangerous_commands(message):
         full_name = f"{message.author.name}#{message.author.discriminator}"
         footer = f"Author: {message.author.id} | Message ID: {message.id} • {date} • {regex_id}"
 
-        message_content = f"""
+        new_message_content = f"""
 **WARNING: Potentially harmful instructions:**
 
 ------------------------------------------
-||{message.content[:1024]}||
+||{message_content[:1024]}||
 ------------------------------------------
 *Click the spoiler above to see the original message, send by {full_name}.*
 
@@ -56,7 +56,7 @@ This does not mean that the commands included will cause damage, but we suggest 
 """
 
         # Create Embed
-        embed = Embed(description=message_content, color=config.COLOR)
+        embed = Embed(description=new_message_content, color=config.COLOR)
 
         embed.set_author(name=full_name, icon_url=message.author.avatar_url)
 
