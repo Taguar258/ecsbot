@@ -210,7 +210,7 @@ async def unmute(author, channel, guild, args):
         if i["userid"] == member.id and i["type"] == "mute":
             muted = True
 
-    if not muted:
+    if not muted and config.MUTEDROLE not in [role.id for role in member.roles]:
         await channel.send("This user isnt muted " + member.mention + "!")
         return
 

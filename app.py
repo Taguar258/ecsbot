@@ -7,8 +7,10 @@ import modules.tick as tick
 import util
 from config.config import config
 from discord.ext import tasks
+# from discord_slash import SlashCommand
 from modules import exec_command
 from modules.message_detection import detect_dangerous_commands
+from modules.vote_mute import check_reaction
 
 # import modules.moderation as moderation
 # import modules.verification as verification
@@ -75,6 +77,7 @@ async def on_message(message):
     if message.author == client.user:
         return
 
+    # Censor malicious commands
     await detect_dangerous_commands(message)
 
     if message.content.startswith(config.PREFIX):
@@ -91,8 +94,22 @@ async def on_message(message):
 @client.event
 async def on_raw_reaction_add(payload):
     guild = client.get_guild(payload.guild_id)
+    channel = client.get_channel(payload.channel_id)
+    message = await channel.fetch_message(payload.message_id)
     member = guild.get_member(payload.user_id)
     reaction = b64encode(str(payload.emoji).encode())
+
+    # Check if user and author are the same
+    if reaction in [config.VOTE_REACTION_MUTE, config.VOTE_REACTION_NO_MUTE] and \
+       message.author.id == payload.user_id:
+
+        await message.remove_reaction(payload.emoji, message.author)
+
+        return
+
+    # Check for possible mute vote/result
+    if reaction == config.VOTE_REACTION_MUTE:
+        await check_reaction(client, channel, message)
 
     if config.ROLESMSG == payload.message_id and config.ROLESCHANNEL == payload.channel_id:
         if reaction in config.ROLES.keys():
@@ -175,6 +192,7 @@ async def on_message_edit(before, after):
 
     if not after.author.bot:
 
+        # Censor malicious commands
         await detect_dangerous_commands(after)
 
         channel = client.get_channel(config.LOGCHANNEL)

@@ -16,7 +16,6 @@ async def detect_dangerous_commands(message):
      - etc.
 
     """
-
     message_content = sub(r"<.{1,2}\d*>", "", message.content)  # Pings trigger things ;)
 
     # Check for match

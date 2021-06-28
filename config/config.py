@@ -24,6 +24,7 @@ class ProductionEnv:
     UNVERIFIEDROLE = 732212270385332225
     VERIFIEDROLE = 690212961876312094
     STAFFROLE = 724251714613411851
+    MODROLE = 690212787087081554
     MUTEDROLE = 690254996004012050
 
     # Custom roles {b64reaction: [rolename, roleid]}
@@ -203,6 +204,14 @@ If a mod is online but doesn't see your message in #verification, you can ping t
     # Ignored Commands
     IGNORED_COMMANDS = ["d"]
 
+    # Vote Mute
+    VOTE_REACTION_MUTE = b"8J+Uhw=="
+    VOTE_REACTION_NO_MUTE = b"8J+UiA=="
+
+    MUTE_CHANNEL = 724244723023478806
+
+    TRIP_LEVEL = 0.0160213
+
 
 class TestingEnv:
     """ Config for Production Environment
@@ -221,6 +230,7 @@ class TestingEnv:
     UNVERIFIEDROLE = 776900475161280514
     VERIFIEDROLE = 776900474552844288
     STAFFROLE = 776900462753480714
+    MODROLE = 776900459180458015
     MUTEDROLE = 776900473391022101
 
     ROLES = {b"8J+UlA==": ["ping", 776900472358305833],
@@ -275,6 +285,13 @@ class TestingEnv:
     GREY_COMMANDS_COMBINED = ProductionEnv.GREY_COMMANDS_COMBINED
 
     IGNORED_COMMANDS = ProductionEnv.IGNORED_COMMANDS
+
+    VOTE_REACTION_MUTE = ProductionEnv.VOTE_REACTION_MUTE
+    VOTE_REACTION_NO_MUTE = ProductionEnv.VOTE_REACTION_NO_MUTE
+
+    MUTE_CHANNEL = 776900510796087326
+
+    TRIP_LEVEL = ProductionEnv.TRIP_LEVEL
 
 
 if TESTING:
