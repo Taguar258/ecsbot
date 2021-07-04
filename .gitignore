@@ -1,6 +1,9 @@
 # Server-specific Files
 data/
 
+# bak
+modules/.old
+
 # Don't leak the token
 tokens.py
 

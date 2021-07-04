@@ -4,42 +4,66 @@ from time import sleep
 
 from config.config import config
 from discord import Embed
+from discord.ext import commands
 
 
-async def detect_dangerous_commands(message):
-    """ Check if message includes potentially harmful code.
-
-    For example:
-     - dd
-     - gparted
-     - rm
-     - etc.
-
+class MessageDetection(commands.Cog):
+    """ Cog for bad command message detection
     """
-    message_content = sub(r"<.{1,2}\d*>", "", message.content)  # Pings trigger things ;)
+    def __init__(self, bot):
 
-    # Check for match
-    if search(config.GREY_COMMANDS_COMBINED, message_content, MULTILINE | IGNORECASE):  # Checking in advance as this decreases cpu usage
+        self.bot = bot
 
-        # Delete message
-        await message.delete()
+    @commands.Cog.listener()
+    async def on_message(self, message):
+        """ On message sent
+        """
+        if not message.author.bot:
 
-        # Get reason
-        for regex_id, (regex, reason) in enumerate(config.GREY_COMMANDS.items()):  # noqa: B007  # Takes time but identifies regex
+            await self.detect_dangerous_commands(message)
 
-            if search(regex, message_content, MULTILINE | IGNORECASE):
+    @commands.Cog.listener()
+    async def on_message_edit(self, before, after):
+        """ On message edit
+        """
+        if not after.author.bot:
 
-                break
+            await self.detect_dangerous_commands(after)
 
-            sleep(0.02)
+    async def detect_dangerous_commands(self, message):
+        """ Check if message includes potentially harmful code.
 
-        # Variables
-        date = datetime.now().strftime("%d.%m.%Y")
+        For example:
+         - dd
+         - gparted
+         - rm
+         - etc.
 
-        full_name = f"{message.author.name}#{message.author.discriminator}"
-        footer = f"Author: {message.author.id} | Message ID: {message.id} • {date} • {regex_id}"
+        """
+        message_content = sub(r"<.{1,2}\d*>", "", message.content)  # Pings trigger things ;)
 
-        new_message_content = f"""
+        # Check for match
+        if search(config.GREY_COMMANDS_COMBINED, message_content, MULTILINE | IGNORECASE):  # Checking in advance as this decreases cpu usage
+
+            # Delete message
+            await message.delete()
+
+            # Get reason
+            for regex_id, (regex, reason) in enumerate(config.GREY_COMMANDS.items()):  # noqa: B007  # Takes time but identifies regex
+
+                if search(regex, message_content, MULTILINE | IGNORECASE):
+
+                    break
+
+                sleep(0.02)
+
+            # Variables
+            date = datetime.now().strftime("%d.%m.%Y")
+
+            full_name = f"{message.author.name}#{message.author.discriminator}"
+            footer = f"Author: {message.author.id} | Message ID: {message.id} • {date} • {regex_id}"
+
+            new_message_content = f"""
 **WARNING: Potentially harmful instructions:**
 
 ------------------------------------------
@@ -54,12 +78,18 @@ This does not mean that the commands included will cause damage, but we suggest 
 **{reason[1]}**
 """
 
-        # Create Embed
-        embed = Embed(description=new_message_content, color=config.COLOR)
+            # Create Embed
+            embed = Embed(description=new_message_content, color=config.COLOR)
 
-        embed.set_author(name=full_name, icon_url=message.author.avatar_url)
+            embed.set_author(name=full_name, icon_url=message.author.avatar_url)
 
-        embed.set_footer(text=footer)
+            embed.set_footer(text=footer)
 
-        # Send Embed
-        await message.channel.send(embed=embed)
+            # Send Embed
+            await message.channel.send(embed=embed)
+
+
+def setup(bot):
+    """ On bot execute
+    """
+    bot.add_cog(MessageDetection(bot))

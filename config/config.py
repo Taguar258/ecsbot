@@ -17,15 +17,29 @@ class ProductionEnv:
 
     STATUS = "Ethical Computing Society!"
 
+    # DB
+    DATA_FILES_EMPTY = {
+
+        "logs": {"logs": []},
+        "punishments": {"punishments": []},
+        "reminds": {"reminds": []},
+        "public_help": {"current_channels": [], "freeze": False},
+
+    }
+
+    DATA_FILES = DATA_FILES_EMPTY.keys()
+
     # ID of the Guild.
     GUILD = 690212435306741901
 
     # Roles for the Verification-Mechanism and others
-    UNVERIFIEDROLE = 732212270385332225
-    VERIFIEDROLE = 690212961876312094
     STAFFROLE = 724251714613411851
     MODROLE = 690212787087081554
+    DEVROLE = 690212865688469545
     MUTEDROLE = 690254996004012050
+
+    # Ban
+    BANDELETEMESSAGES = 2  # Delete messages of last 2 days
 
     # Custom roles {b64reaction: [rolename, roleid]}
     ROLES = {
@@ -38,21 +52,14 @@ class ProductionEnv:
 
     }
 
-    # Verification channel stuffs
+    # Verification channel stuff
+    UNVERIFIEDROLE = 732212270385332225
+    VERIFIEDROLE = 690212961876312094
+
+    VERIFICATIONENABLED = True
+
     VERIFICATIONCHANNELCAT = 690212435310936085
     VERIFICATIONCHANNELNAME = "verification"
-
-    # Log channels
-    WELCOMEMSG_CHANNEL = 724238864855597056
-    JOINLEAVE_CHANNEL = 726513291286806549
-
-    # Other important channels
-    LOGCHANNEL = 746076232634073118
-    MEMBERCOUNTCHANNEL = 755757420021809322
-    ROLESCHANNEL = 690219084469895225
-
-    # The message for the reaction roles
-    ROLESMSG = 724236686971764767
 
     VERIFICATIONCHANNELMESSAGE = """
 **How do I verify myself?**
@@ -73,15 +80,6 @@ Please wait until a moderator is available.
 If a mod is online but doesn't see your message in #verification, you can ping them to get their attention.
 """
 
-    # Discord Embeds for Reminders and various other warnings.
-    WELCOMEMSG = Embed(
-
-        title="Ethical Computing Society",
-        description="Welcome to the Ethical Computing Society! To be able to chat, you will need to verify yourself in #verification!",
-        color=COLOR,
-
-    )
-
     REMINDERMSG = Embed(
 
         title="Ethical Computing Society",
@@ -93,7 +91,15 @@ If a mod is online but doesn't see your message in #verification, you can ping t
     REMINDKICKMSG = Embed(
 
         title="Ethical Computing Society",
-        description="We're sorry, but you didn't verify in time and we had to kick you. You can always rejoin if you want to come back!",
+        description="We're sorry, but you didn't verify in time and we had to kick you. You can always rejoin if you want to come back!\nhttps://discord.gg/CkMmZsR",
+        color=COLOR,
+
+    )
+
+    WELCOMEMSG = Embed(
+
+        title="Ethical Computing Society",
+        description="Welcome to the Ethical Computing Society! To be able to chat, you will need to verify yourself in #verification!",
         color=COLOR,
 
     )
@@ -106,6 +112,32 @@ If a mod is online but doesn't see your message in #verification, you can ping t
 
     )
 
+    # No verification channel stuff
+    NOVERIFICATION_WELCOMEMSG = Embed(
+
+        title="Ethical Computing Society",
+        description="Welcome to the Ethical Computing Society!\nMake sure to read the rules.",
+        color=COLOR,
+
+    )
+
+    NOVERIFIEDROLE = "NOT SET"  # TODO
+
+    NOVERIFICATION_CHANNELNAME = "missing-channels"
+
+    # Log channels
+    WELCOMEMSG_CHANNEL = 724238864855597056
+    JOINLEAVE_CHANNEL = 726513291286806549
+
+    # Other important channels
+    LOGCHANNEL = 746076232634073118
+    MEMBERCOUNTCHANNEL = 755757420021809322
+    ROLESCHANNEL = 690219084469895225
+
+    # The message for the reaction roles
+    ROLESMSG = 724236686971764767
+
+    # Discord Embeds for Reminders and various other warnings.
     UNMUTEMSG = Embed(
 
         title="Ethical Computing Society",
@@ -126,6 +158,14 @@ If a mod is online but doesn't see your message in #verification, you can ping t
 
         title="Ethical Computing Society",
         description="We're sorry, but you have been banned for violating our rules. You can appeal using the following email taguar258@hash.fyi",
+        color=COLOR,
+
+    )
+
+    UNBANMSG = Embed(
+
+        title="Ethical Computing Society",
+        description="You have been unbanned.\nhttps://discord.gg/CkMmZsR",
         color=COLOR,
 
     )
@@ -195,6 +235,7 @@ If a mod is online but doesn't see your message in #verification, you can ping t
         r"\bcat\s*/dev.*\b": ["as it creates a kernel panic", "We would not suggest running this command."],
         r"\b\^.*\^.*\b": ["as this might be a substitution", "You most likely won't need a substitution, so we suggest you to ignore this command."],
         r"(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}.*(bash|cmd|sh|zsh))|((bash|cmd|sh|zsh).*\d{3}\.\d{3}\.\d{3}\.\d{3})": ["as this could be a reverse shell", "When running this command, someone could potentially connect with your computer."],
+        r"\b-y\b": ["as it automatically executes tasks without double checking for your user input", "It's adviced to run the command without '-y' argument."],
         #r"\A[^\w\W]": ["", ""],  # Needed when less than two cases
 
     }
@@ -227,10 +268,14 @@ class TestingEnv:
 
     GUILD = 776898177302921286
 
+    DATA_FILES_EMPTY = ProductionEnv.DATA_FILES_EMPTY
+    DATA_FILES = ProductionEnv.DATA_FILES
+
     UNVERIFIEDROLE = 776900475161280514
     VERIFIEDROLE = 776900474552844288
     STAFFROLE = 776900462753480714
     MODROLE = 776900459180458015
+    DEVROLE = 776900461630324757
     MUTEDROLE = 776900473391022101
 
     ROLES = {b"8J+UlA==": ["ping", 776900472358305833],
@@ -252,6 +297,13 @@ class TestingEnv:
 
     VERIFICATIONCHANNELMESSAGE = ProductionEnv.VERIFICATIONCHANNELMESSAGE
 
+    VERIFICATIONENABLED = True
+    NOVERIFIEDROLE = 861011856025059359
+    NOVERIFICATION_WELCOMEMSG = ProductionEnv.NOVERIFICATION_WELCOMEMSG
+    NOVERIFICATION_CHANNELNAME = ProductionEnv.NOVERIFICATION_CHANNELNAME
+
+    BANDELETEMESSAGES = ProductionEnv.BANDELETEMESSAGES
+
     WELCOMEMSG = ProductionEnv.WELCOMEMSG
     REMINDERMSG = ProductionEnv.REMINDERMSG
     KICKMSG = ProductionEnv.KICKMSG
@@ -259,6 +311,7 @@ class TestingEnv:
     UNMUTEMSG = ProductionEnv.UNMUTEMSG
     MUTEMSG = ProductionEnv.MUTEMSG
     BANMSG = ProductionEnv.BANMSG
+    UNBANMSG = ProductionEnv.UNBANMSG
     WARNMSG = ProductionEnv.WARNMSG
     REMINDKICKMSG = ProductionEnv.REMINDKICKMSG
 
@@ -279,7 +332,7 @@ class TestingEnv:
 
     HELP_MESSAGE_USER = ProductionEnv.HELP_MESSAGE_USER
 
-    ISS_INFO_ENABLED = ProductionEnv.ISS_INFO_ENABLED
+    ISS_INFO_ENABLED = False
 
     GREY_COMMANDS = ProductionEnv.GREY_COMMANDS
     GREY_COMMANDS_COMBINED = ProductionEnv.GREY_COMMANDS_COMBINED
