@@ -1,6 +1,7 @@
 import discord
 from config.config import config
 from discord.ext import commands
+from discord_slash import SlashContext, cog_ext
 from modules import get_full_name
 
 
@@ -58,15 +59,15 @@ class Debug(commands.Cog):
 
         await self.member_counter()
 
-    @commands.command()
-    async def ping(self, ctx):
+    @cog_ext.cog_slash(name="ping")
+    async def ping(self, ctx: SlashContext):
         """ API call latency
         """
         embed = discord.Embed(title="Ping:", color=config.COLOR)
 
         embed.add_field(name="API", value=str(round(self.bot.latency * 1000)) + "ms", inline=True)
 
-        await ctx.channel.send(embed=embed)
+        await ctx.send(embed=embed)
 
 
 def setup(bot):

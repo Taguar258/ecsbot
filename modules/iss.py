@@ -4,6 +4,7 @@ from json import loads
 from config.config import config
 from discord import Embed
 from discord.ext import commands
+from discord_slash import SlashContext, cog_ext
 from requests import get
 
 
@@ -46,11 +47,11 @@ class ISS(commands.Cog):
 
         return msg
 
-    @commands.command()
-    async def iss(self, ctx):
-        """ Show info fetched from ISS API
+    @cog_ext.cog_slash(name="iss")
+    async def iss(self, ctx: SlashContext):
+        """ Show data of ISS API (open-notify)
         """
-        pls_wait = await ctx.message.channel.send("Fetching...")
+        pls_wait = await ctx.send("Fetching...")
 
         date = datetime.now().strftime("%d.%m.%Y")
 
@@ -67,8 +68,7 @@ class ISS(commands.Cog):
         embed.set_image(url="http://www.businessforum.com/nasa01.JPEG")
         embed.set_footer(text=date)
 
-        await pls_wait.delete()
-        await ctx.message.channel.send(embed=embed)
+        await pls_wait.edit(content="", embed=embed)
 
 
 def setup(bot):

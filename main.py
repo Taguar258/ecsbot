@@ -16,7 +16,7 @@ intents.typing = False
 intents.presences = False
 
 bot = commands.Bot(command_prefix=config.PREFIX, intents=intents)
-slash = SlashCommand(bot, sync_commands=True)  # TODO
+slash = SlashCommand(bot, sync_commands=True)
 
 # Bot extensions
 bot_extensions = [
