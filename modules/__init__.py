@@ -84,12 +84,9 @@ async def check_for_role(ctx, member, target_role, target_action):
     """
     if target_role in [role.id for role in member.roles]:
 
-        await ctx.send(f"This user cannot be {target_action}.")
+        await ctx.message.channel.send(f"This user cannot be {target_action}.")
 
-        # raise IgnoreException
-        return True
-
-    return False
+        raise IgnoreException
 
 
 def get_full_name(member):

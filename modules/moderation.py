@@ -3,10 +3,6 @@ from datetime import datetime, timedelta
 import discord
 from config.config import config
 from discord.ext import commands, tasks
-from discord_slash import SlashContext, cog_ext
-from discord_slash.model import SlashCommandPermissionType
-from discord_slash.utils.manage_commands import (create_option,
-                                                 create_permission)
 from modules import (check_for_id, check_for_role, db, get_full_name,
                      get_punishment_reason_length, log, parse_arguments,
                      send_embed_dm)
@@ -109,60 +105,23 @@ class Moderation(commands.Cog):
 
                 break
 
-    @cog_ext.cog_slash(
-
-        name="whois",
-        options=[
-
-            create_option(
-
-                name="user",
-                description="The user you would like to whois.",
-                option_type=6,
-                required=True,
-
-            )
-
-        ],
-        default_permission=False,
-        permissions={
-
-            config.GUILD: [
-
-                create_permission(
-
-                    config.STAFFROLE,
-                    SlashCommandPermissionType.ROLE,
-                    True,
-
-                ),
-
-            ],
-
-        },
-
-    )
-    async def whois(self, ctx: SlashContext, user):
+    @commands.command(pass_context=True)
+    @commands.has_role(config.STAFFROLE)
+    async def whois(self, ctx):
         """ Whois member lookup
         """
-        if config.STAFFROLE not in [role.id for role in ctx.author.roles]:
+        args = parse_arguments(ctx.message.content)
 
-            await ctx.send("You do not have permission to run this command.")  # I don't trust slash_commands::permission, and I cannot find reference in source code
+        member = await check_for_id(ctx, args)
 
-            return
-
-        # args = parse_arguments(ctx.message.content)
-
-        # member = await check_for_id(ctx, args)
-
-        fullname = get_full_name(user)
+        fullname = get_full_name(member)
 
         embed = discord.Embed(title=fullname, color=config.COLOR)
 
         embed.add_field(
 
             name="Nick",
-            value=user.display_name,
+            value=member.display_name,
             inline=True,
 
         )
@@ -178,7 +137,7 @@ class Moderation(commands.Cog):
         embed.add_field(
 
             name="Joined",
-            value=user.joined_at.strftime("%d/%m/%Y %H:%M:%S"),
+            value=member.joined_at.strftime("%d/%m/%Y %H:%M:%S"),
             inline=False,
 
         )
@@ -186,64 +145,24 @@ class Moderation(commands.Cog):
         embed.add_field(
 
             name="Created",
-            value=user.created_at.strftime("%d/%m/%Y %H:%M:%S"),
+            value=member.created_at.strftime("%d/%m/%Y %H:%M:%S"),
             inline=False,
 
         )
 
         await ctx.send(embed=embed)
 
-    @cog_ext.cog_slash(
-
-        name="purge",
-        options=[
-
-            create_option(
-
-                name="user",
-                description="The user you would like to purge.",
-                option_type=6,
-                required=True,
-
-            )
-
-        ],
-        default_permission=False,
-        permissions={
-
-            config.GUILD: [
-
-                create_permission(
-
-                    config.MODROLE,
-                    SlashCommandPermissionType.ROLE,
-                    True,
-
-                ),
-
-            ],
-
-        },
-
-    )
-    async def purge(self, ctx: SlashContext, user):
+    @commands.command(pass_context=True)
+    @commands.has_role(config.MODROLE)
+    async def purge(self, ctx):
         """ Delete all messages of a specified user
         """
-        if config.MODROLE not in [role.id for role in ctx.author.roles]:
+        args = parse_arguments(ctx.message.content)
 
-            await ctx.send("You do not have permission to run this command.")  # I don't trust slash_commands::permission, and I cannot find reference in source code
+        # Check
+        member = await check_for_id(ctx, args)
 
-            return
-
-        # args = parse_arguments(ctx.message.content)
-
-        # # Check
-        # member = await check_for_id(ctx, args)
-
-        # await check_for_role(ctx, user, config.STAFFROLE, "purged")
-        if await check_for_role(ctx, user, config.STAFFROLE, "purged"):
-
-            return
+        await check_for_role(ctx, member, config.STAFFROLE, "purged")
 
         # Main logic
         purging_info = await ctx.send("Purging...")
@@ -252,61 +171,24 @@ class Moderation(commands.Cog):
 
             if channel.type == discord.ChannelType.text:
 
-                await channel.purge(check=(lambda m: m.author.id == int(user.id)))
+                await channel.purge(check=(lambda m: m.author.id == int(member.id)))
 
-        await log(ctx.guild, ctx.author, "Purge", f"purged all messages from {user.mention}")
+        await log(ctx.guild, ctx.author, "Purge", f"purged all messages from {member.mention}")
 
-        await purging_info.edit(content=f"Successfully purged {user.mention}, rerun if not all messages were affected.")
+        await purging_info.edit(content=f"Successfully purged {member.mention}, rerun if not all messages were affected.")
 
-    @cog_ext.cog_slash(
-
-        name="purge",
-        options=[
-
-            create_option(
-
-                name="user",
-                description="The user you would like to purge.",
-                option_type=6,
-                required=True,
-
-            )
-
-        ],
-        default_permission=False,
-        permissions={
-
-            config.GUILD: [
-
-                create_permission(
-
-                    config.MODROLE,
-                    SlashCommandPermissionType.ROLE,
-                    True,
-
-                ),
-
-            ],
-
-        },
-
-    )
-    async def mute(self, ctx, user):
+    @commands.command(pass_context=True)
+    @commands.has_role(config.MODROLE)
+    async def mute(self, ctx):
         """ Mute user for certain amount of time
         """
-        if config.MODROLE not in [role.id for role in ctx.author.roles]:
+        # Check stuff
+        args = parse_arguments(ctx.message.content)
 
-            await ctx.send("You do not have permission to run this command.")  # I don't trust slash_commands::permission, and I cannot find reference in source code
+        # Check
+        member = await check_for_id(ctx, args)
 
-            return
-
-        # # Check stuff
-        # args = parse_arguments(ctx.message.content)
-
-        # # Check
-        # member = await check_for_id(ctx, args)
-
-        await check_for_role(ctx, user, config.MODROLE, "muted")
+        await check_for_role(ctx, member, config.MODROLE, "muted")
 
         fullname = get_full_name(ctx.message.author)
 

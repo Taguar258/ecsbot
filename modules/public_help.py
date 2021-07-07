@@ -4,6 +4,8 @@ from datetime import datetime
 from config.config import config
 from discord import Embed
 from discord.ext import commands, tasks
+from discord_slash import SlashContext, cog_ext
+from discord_slash.utils.manage_commands import create_option
 from modules import IgnoreException, db, parse_arguments
 
 
@@ -99,24 +101,28 @@ class PublicHelp(commands.Cog):
 
         return await channel.send(embed=embed)
 
-    async def request_permission(self, db, channel, author, client, args):
+    async def request_permission(self, db, output_channel, channel, author, client, args):  # TODO: Improvised
         """ Validate selection by asking for message
         """
         if "-y" not in args:
 
-            req_quest_msg = await channel.send("Please answer with 'YES' if you would like to close and delete your temporary channel.")
+            req_quest_msg = await output_channel.send("Please answer with 'YES' if you would like to close and delete your temporary channel.")
 
-            try:
+            for _ in range(4):
 
-                req_msg = await client.wait_for('message', timeout=10)
+                try:
 
-            except TimeoutError:
+                    req_msg = await client.wait_for('message', timeout=5)
 
-                db.unlock("public_help")
+                    break
 
-                await self.tmp_msg("Timeout was raised.", channel)
+                except TimeoutError:
 
-                raise IgnoreException
+                    db.unlock("public_help")
+
+                    await self.tmp_msg("Timeout was raised.", output_channel)
+
+                    raise IgnoreException
 
             if req_msg.author != author or req_msg.content != "YES" or req_msg.channel.id != channel.id:
 
@@ -129,13 +135,29 @@ class PublicHelp(commands.Cog):
             await req_quest_msg.delete()
             await req_msg.delete()
 
-    @commands.command()
-    async def new(self, ctx):
-        """ Create new help channel
-        """
-        args = parse_arguments(ctx.message.content)
+    @cog_ext.cog_slash(
 
-        await ctx.message.delete()
+        name="new",
+        options=[
+
+            create_option(
+
+                name="title",
+                description="Describe your issue in less than three words.",
+                option_type=3,
+                required=True,
+
+            )
+
+        ],
+
+    )
+    async def new(self, ctx: SlashContext, title):  # TODO
+        """ Create a new help channel
+        """
+        # args = parse_arguments(ctx.message.content)
+
+        # await ctx.message.delete()
 
         category = self.bot.get_channel(config.PHELPCATEGORY)
 
@@ -149,43 +171,43 @@ class PublicHelp(commands.Cog):
 
             db.unlock("public_help")
 
-            await self.tmp_msg("This feature is currently locked.", ctx.message.channel)
+            await self.tmp_msg("This feature is currently locked.", ctx)
 
             return
 
-        if config.PHELP_MUTE_ROLE in [role.id for role in ctx.message.author.roles]:
+        if config.PHELP_MUTE_ROLE in [role.id for role in ctx.author.roles]:
 
             db.unlock("public_help")
 
-            await self.tmp_msg("You don't have permission to use this feature.", ctx.message.channel)
+            await self.tmp_msg("You don't have permission to use this feature.", ctx)
 
             return
 
-        if not args.check(0):
+        # if not args.check(0):
 
-            db.unlock("public_help")
+        #     db.unlock("public_help")
 
-            await self.tmp_msg("Please supply a title.", ctx.message.channel)
+        #     await self.tmp_msg("Please supply a title.", ctx.message.channel)
 
-            return
+        #     return
 
-        title = " ".join(args[0:])
+        # title = " ".join(args[0:])
 
         if len(title) > config.PHELP_MAX_TITLE:
 
             db.unlock("public_help")
 
-            await self.tmp_msg("Please supply a shorter title.", ctx.message.channel)
+            await self.tmp_msg("Please supply a shorter title.", ctx)
 
             return
 
         for data in phelp_data:
 
-            if data["user_id"] == ctx.message.author.id:
+            if data["user_id"] == ctx.author.id:
 
                 db.unlock("public_help")
 
-                await self.tmp_msg("You are only allowed to have one public help channel.", ctx.message.channel)
+                await self.tmp_msg("You are only allowed to have one public help channel.", ctx)
 
                 return
 
@@ -193,40 +215,38 @@ class PublicHelp(commands.Cog):
 
             db.unlock("public_help")
 
-            await self.tmp_msg(f"Only {config.PHELP_MAX_CHANNELS} public help channels are allowed.", ctx.message.channel)
+            await self.tmp_msg(f"Only {config.PHELP_MAX_CHANNELS} public help channels are allowed.", ctx)
 
             return
 
         for check_channel in category.channels:
 
-            if check_channel.topic == str(ctx.message.author.id):
+            if check_channel.topic == str(ctx.author.id):
 
                 db.unlock("public_help")
 
-                await self.tmp_msg("You are only allowed to have one public help channel.", ctx.message.channel)
+                await self.tmp_msg("You are only allowed to have one public help channel.", ctx)
 
                 return
 
         # Creating new channel
-        creating_msg = await ctx.message.channel.send("Creating new channel please wait...")
+        creating_msg = await ctx.send("Creating new channel please wait...")
 
-        new_channel = await ctx.message.guild.create_text_channel(
+        new_channel = await ctx.guild.create_text_channel(
 
             title,
 
             category=category,
-            topic=str(ctx.message.author.id),
+            topic=str(ctx.author.id),
             reason="New help channel requested.",
 
         )
 
-        await new_channel.send(f"This is your new channel: <@{ctx.message.author.id}>\nPlease explain your problem down below, so other users can help you.")
+        await new_channel.send(f"This is your new channel: <@{ctx.author.id}>\nPlease explain your problem down below, so other users can help you.")
 
-        success_msg = await ctx.message.channel.send("Your new channel has been created.")
+        await creating_msg.edit(content="Your new channel has been created.")
 
-        await creating_msg.delete()
-
-        await success_msg.add_reaction(config.REACT_SUCCESS)
+        await creating_msg.add_reaction(config.REACT_SUCCESS)
 
         # Writing Data #
         date = datetime.utcnow()
@@ -235,7 +255,7 @@ class PublicHelp(commands.Cog):
 
             {
 
-                "user_id": ctx.message.author.id,
+                "user_id": ctx.author.id,
                 "category": category.id,
                 "channel": new_channel.id,
                 "title": title,
@@ -244,8 +264,8 @@ class PublicHelp(commands.Cog):
                 "day": date.day,
                 "hour": date.hour,
                 "minute": date.minute,
-                "user_name": ctx.message.author.name,
-                "guild": ctx.message.guild.id,
+                "user_name": ctx.author.name,
+                "guild": ctx.guild.id,
 
             }
 
@@ -256,15 +276,31 @@ class PublicHelp(commands.Cog):
         db.unlock("public_help")
 
         await asyc_sleep(10)
-        await success_msg.delete()
+        await creating_msg.delete()
 
-    @commands.command()
-    async def close(self, ctx):
-        """ Close member's public help channel
+    @cog_ext.cog_slash(
+
+        name="close",
+        options=[
+
+            create_option(
+
+                name="y_skip",
+                description="-y option to skip permission request.",
+                option_type=3,
+                required=False,
+
+            )
+
+        ],
+
+    )
+    async def close(self, ctx: SlashContext, y_skip=""):  # TODO
+        """ Close your public help channel
         """
-        args = parse_arguments(ctx.message.content)
+        # args = parse_arguments(ctx.message.content)
 
-        await ctx.message.delete()
+        # await ctx.message.delete()
 
         await db.lock("public_help")
 
@@ -276,7 +312,7 @@ class PublicHelp(commands.Cog):
 
             db.unlock("public_help")
 
-            await self.tmp_msg("This feature is currently locked.", ctx.message.channel)
+            await self.tmp_msg("This feature is currently locked.", ctx)
 
             return
 
@@ -286,23 +322,23 @@ class PublicHelp(commands.Cog):
 
             list_for_check.append(str(data["user_id"]))
 
-        if str(ctx.message.author.id) not in list_for_check:
+        if str(ctx.author.id) not in list_for_check:
 
             db.unlock("public_help")
 
-            await self.tmp_msg("You did not create a channel: No channel to delete.", ctx.message.channel)
+            await self.tmp_msg("You did not create a channel: No channel to delete.", ctx)
 
             return
 
         # Ask for permission #
-        await self.request_permission(db, ctx.message.channel, ctx.message.author, self.bot, args)
+        await self.request_permission(db, ctx, ctx.channel, ctx.author, self.bot, [y_skip])
 
         # Delete Channel #
         end_data = []
 
         for block in phelp_data:
 
-            if block["user_id"] == ctx.message.author.id:
+            if block["user_id"] == ctx.author.id:
 
                 delete_channel_id = block["channel"]
 
@@ -316,7 +352,7 @@ class PublicHelp(commands.Cog):
 
         db.unlock("public_help")
 
-        if delete_channel.topic == str(ctx.message.author.id):
+        if delete_channel.topic == str(ctx.author.id):
 
             await delete_channel.delete(reason="Help channel deletion requested.")
 
@@ -324,11 +360,11 @@ class PublicHelp(commands.Cog):
 
             db.unlock("public_help")
 
-            await self.tmp_msg("Fatal Exception author id does not match.", ctx.message.channel)
+            await self.tmp_msg("Fatal Exception author id does not match.", ctx)
 
             return
 
-        await self.tmp_msg("Your channel has been successfully closed.", ctx.message.channel, reaction=config.REACT_SUCCESS)
+        await self.tmp_msg("Your channel has been successfully closed.", ctx, reaction=config.REACT_SUCCESS)
 
     @commands.command(pass_context=True)
     @commands.has_role(config.STAFFROLE)
@@ -389,7 +425,7 @@ class PublicHelp(commands.Cog):
             return
 
         # Ask for permission #
-        await self.request_permission(db, ctx.message.channel, ctx.message.author, self.bot, args)
+        await self.request_permission(db, ctx.message.channel, ctx.message.channel, ctx.message.author, self.bot, args)
 
         # Delete Channel #
         end_data = []
@@ -413,6 +449,106 @@ class PublicHelp(commands.Cog):
         await delete_channel.delete(reason="Force deletion of help channel.")
 
         await self.tmp_msg("The channel has been deleted.", ctx.message.channel, reaction=config.REACT_SUCCESS)
+
+    @commands.command(pass_context=True)
+    @commands.has_role(config.MODROLE)
+    async def rename(self, ctx):  # TODO: Rework function
+        """ Rename an existing help channel
+        """
+        args = parse_arguments(ctx.message.content)
+
+        await ctx.message.delete()
+
+        category = self.bot.get_channel(config.PHELPCATEGORY)
+
+        await db.lock("public_help")
+
+        phelp_data = db["public_help"]["current_channels"]
+        freeze = db["public_help"]["freeze"]
+
+        # Check for valid request
+        if not args.check(0, re=r"^[0-9]*$"):
+
+            await self.tmp_msg("Please supply a valid ID.", ctx.message.channel)
+
+            db.unlock("public_help")
+
+            return
+
+        if int(args[0]) not in [data["channel"] for data in phelp_data]:
+
+            await self.tmp_msg("Please supply a valid ID.", ctx.message.channel)
+
+            db.unlock("public_help")
+
+            return
+
+        if not args.check(1):
+
+            db.unlock("public_help")
+
+            await self.tmp_msg("Please supply a title.", ctx.message.channel)
+
+            return
+
+        title = " ".join(args[1:])
+
+        if len(title) > config.PHELP_MAX_TITLE:
+
+            db.unlock("public_help")
+
+            await self.tmp_msg("Please supply a shorter title.", ctx)
+
+            return
+
+        channel_id = [channel["channel"] for channel in phelp_data if channel["channel"] == int(args[0])][0]
+
+        channel = self.bot.get_channel(channel_id)
+        old_name = channel.name
+
+        await channel.edit(name=title)
+
+        info_msg = await ctx.message.channel.send(f"Channel successfully renamed from '{old_name}' to '{title}'.")
+
+        await info_msg.add_reaction(config.REACT_SUCCESS)
+
+        # Writing Data #
+        date = datetime.utcnow()
+
+        new_phelp_data = []
+
+        for data in phelp_data:
+
+            if data["channel"] != int(args[0]):
+
+                new_phelp_data.append(data)
+
+        phelp_data.append(
+
+            {
+
+                "user_id": ctx.author.id,
+                "category": category.id,
+                "channel": channel.id,
+                "title": title,
+                "year": date.year,
+                "month": date.month,
+                "day": date.day,
+                "hour": date.hour,
+                "minute": date.minute,
+                "user_name": ctx.author.name,
+                "guild": ctx.guild.id,
+
+            }
+
+        )
+
+        db["public_help"] = {"current_channels": phelp_data, "freeze": freeze}
+
+        db.unlock("public_help")
+
+        await asyc_sleep(10)
+        await info_msg.delete()
 
     @commands.command(pass_context=True)
     @commands.has_role(config.STAFFROLE)
