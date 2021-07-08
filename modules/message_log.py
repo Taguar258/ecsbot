@@ -1,4 +1,5 @@
 from datetime import datetime
+from textwrap import wrap
 
 from config.config import config
 from discord import Embed
@@ -35,8 +36,11 @@ class MessageLog(commands.Cog):
 
             embed.set_author(name=full_name, icon_url=after.author.avatar_url)
 
-            embed.add_field(name="Before", value=before.content, inline=False)
-            embed.add_field(name="After", value=after.content, inline=False)
+            for pos, (before, after) in enumerate(zip(wrap(before.content, 1000), wrap(after.content, 1000))):
+
+                embed.add_field(name=f"Before[{pos}]", value=before, inline=False)
+
+                embed.add_field(name=f"After[{pos}]", value=after, inline=False)
 
             embed.set_footer(text=footer)
 
@@ -53,7 +57,7 @@ class MessageLog(commands.Cog):
             date = datetime.now().strftime("%d.%m.%Y")
 
             full_name = f"{message.author.name}#{message.author.discriminator}"
-            full_title = f"**Message sent by** <@{message.author.id}> **deleted in** <#{message.channel.id}>\n{message.content}"
+            full_title = f"**Message sent by** <@{message.author.id}> **deleted in** <#{message.channel.id}>"
             footer = f"Author: {message.author.id} | Message ID: {message.id} • {date}"
 
             embed = Embed(
@@ -62,6 +66,10 @@ class MessageLog(commands.Cog):
                 color=config.COLOR,
 
             )
+
+            for pos, content in enumerate(wrap(message.content, 1000)):
+
+                embed.add_field(name=f"Content[{pos}]", value=content, inline=False)
 
             embed.set_author(name=full_name, icon_url=message.author.avatar_url)
 

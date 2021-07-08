@@ -1,2 +1,4 @@
 requests==2.25.1
-discord==1.0.1
+discord.py==1.7.2
+discord_py_slash_command==2.0.4
+discord==1.7.3

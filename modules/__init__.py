@@ -1,6 +1,7 @@
 import json
 from asyncio import coroutine
 from asyncio import sleep as async_sleep
+from copy import deepcopy
 from re import finditer, match, sub
 from time import sleep
 from traceback import format_stack, print_exc
@@ -155,21 +156,35 @@ async def log(guild, author, title, message):
 
     await channel.send(embed=embed)
 
-    return
-
 
 async def send_embed_dm(member, embed):
     """ Send an embed to dm of member
     """
     try:
 
-        await member.send(embed=embed)
+        embed_footer = embed.footer
+
+        if isinstance(embed_footer.text, str):
+
+            embed_footer.text += "\n[Messages sent here are ignored]"
+
+        else:
+
+            embed_footer.text = "[Messages sent here are ignored]"
+
+        new_embed = deepcopy(embed)
+        new_embed.set_footer(**embed_footer.__dict__)
+
+        await member.send(embed=new_embed)
 
     except (errors.Forbidden, AttributeError):
 
         pass  # dms disabled
 
-    return
+    except Exception:
+
+        await member.send(embed=embed)
+
 
 # ------ END COMMON SERVER FUNCTIONS ------
 
