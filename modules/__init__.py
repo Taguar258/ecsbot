@@ -1,4 +1,5 @@
 import json
+import pickle
 from asyncio import coroutine
 from asyncio import sleep as async_sleep
 from copy import deepcopy
@@ -203,7 +204,8 @@ class DataHandler:
     def __init__(self):
 
         # Static Variables
-        self._save_frequency = 30  # seconds
+        self._save_frequency = 60  # seconds
+        self._backup_frequency = 300  # seconds
         self._delay = 1
         self._iter_timeout = round(90 // self._delay)  # 1.5 min
 
@@ -289,10 +291,25 @@ class DataHandler:
 
             self._write_to_disk()
 
+    @coroutine
+    async def _backup(self):
+        """ Write data to disk using pickle in case of issues
+        """
+        while True:
+
+            await async_sleep(self._backup_frequency)
+
+            with open("data/backup.pickle", "wb") as pickle_file:
+
+                pickle.dump(self.data, pickle_file)
+
+            print(1)
+
     def catch(self, bot, func, *argv):
         """ Save to disk if exception
         """
         bot.loop.create_task(self._auto_save())
+        bot.loop.create_task(self._backup())
 
         try:
 
@@ -311,14 +328,6 @@ class DataHandler:
     async def lock(self, data_name):
         """ Lock file (only one process at a time)
         """
-        if self._last_lock is not None:
-
-            print("-------------------------------------")
-            print("".join(format_stack()[:-1]))
-            print(f"File: {self._last_lock}\n")
-            print("[w] Unlock last file before locking new one")
-            print("-------------------------------------")
-
         for _ in range(self._iter_timeout):  # Might cause issues if qeue too long
 
             if self._file_lock[data_name]:
