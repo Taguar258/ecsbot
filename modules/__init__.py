@@ -257,10 +257,36 @@ class DataHandler:
 
             raise KeyError("specified data does not exists")
 
+    def _get_nested_items(self, input_type):
+        """ Get all items of nested dict and list
+            (written by Richard and dtc; added code myself)
+        """
+        if isinstance(input_type, dict):
+
+            input_iter = input_type.values()
+
+        elif isinstance(input_type, list):
+
+            input_iter = input_type
+
+        for nested in input_iter:
+
+            if isinstance(nested, (dict, list)):
+
+                yield from self._get_nested_items(nested)
+
+            else:
+
+                yield nested
+
     def _write_to_disk(self):
         """ Write data from memory to disk
         """
         for file_name, file_data in self.data.items():
+
+            if sum([0 if isinstance(value, (int, str, bool, float)) else 1 for value in self._get_nested_items(self.data)]):
+
+                raise IndexError("cannot write object without return type")
 
             if self._edited_data[file_name]:
 
@@ -302,8 +328,6 @@ class DataHandler:
             with open("data/backup.pickle", "wb") as pickle_file:
 
                 pickle.dump(self.data, pickle_file)
-
-            print(1)
 
     def catch(self, bot, func, *argv):
         """ Save to disk if exception
