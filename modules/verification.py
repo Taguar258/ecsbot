@@ -28,7 +28,7 @@ class Verification(commands.Cog):
 
             guild = self.bot.get_guild(reminder["guild"])
             member = guild.get_member(reminder["userid"])
-            reminder = datetime(
+            reminder_dt = datetime(
 
                 reminder["year"],
                 reminder["month"],
@@ -40,13 +40,13 @@ class Verification(commands.Cog):
 
             )
 
-            if time_now > reminder:
+            if time_now > reminder_dt:
 
                 if reminder["status"] in [0, 1, 2]:  # [0, 1]
 
                     await send_embed_dm(member, config.REMINDERMSG)
 
-                    newremind = reminder + timedelta(hours=24)
+                    newremind = reminder_dt + timedelta(hours=24)
 
                     endreminds.append(
 
@@ -57,8 +57,8 @@ class Verification(commands.Cog):
                             "day": newremind.day,
                             "hour": newremind.hour,
                             "minute": newremind.minute,
-                            "userid": reminder["userid"],
-                            "guild": reminder["guild"],
+                            "userid": member.id,
+                            "guild": guild.id,
                             "status": reminder["status"] + 1,
 
                         }
