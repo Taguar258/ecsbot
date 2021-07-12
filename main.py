@@ -28,6 +28,7 @@ bot_extensions = [
     "modules.verification",
     "modules.message_log",
     "modules.roles",
+    "modules.cleanup",
     "modules.public_help",
     "modules.iss",
 

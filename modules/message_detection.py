@@ -20,6 +20,8 @@ class MessageDetection(commands.Cog):
         """
         if not message.author.bot:
 
+            message.content = self.filter_md(message.content)
+
             await self.detect_dangerous_commands(message)
 
     @commands.Cog.listener()
@@ -28,7 +30,28 @@ class MessageDetection(commands.Cog):
         """
         if not after.author.bot:
 
+            after.content = self.filter_md(after.content)
+
             await self.detect_dangerous_commands(after)
+
+    def filter_md(self, md):
+        """ Remove markdown syntax from content of message
+        """
+        for rep in ["*", "`", "~", "_"]:
+
+            md = md.replace(f"\\{rep}", rep)
+
+        for _ in range(20):  # Potential sec risk
+
+            match = search(r"((\*.*\*)|(\_.*\_)|(\~.*\~)|(\`.*\`))", md)  # Bad regex
+
+            if not match:
+
+                break
+
+            md = md[:match.start()] + md[(match.start() + 1):(match.end() - 1)] + md[match.end():]
+
+        return md
 
     async def detect_dangerous_commands(self, message):
         """ Check if message includes potentially harmful code.

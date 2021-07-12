@@ -48,7 +48,7 @@ class ProductionEnv:
         b"4oyo77iP": ["coder", 690243098533822485],
         b"8J+Suw==": ["hacker", 690243125225980007],
         b"8J+Upw==": ["hardware", 726809084975906856],
-        b"8J+Svw==": ["linux", 796079401544450109],
+        b"8J+Svw==": ["linux", 798178796192006174],
 
     }
 
@@ -128,6 +128,7 @@ If a mod is online but doesn't see your message in #verification, you can ping t
     # Log channels
     WELCOMEMSG_CHANNEL = 724238864855597056
     JOINLEAVE_CHANNEL = 726513291286806549
+    MUTECHANNEL = 724244723023478806
 
     # Other important channels
     LOGCHANNEL = 746076232634073118
@@ -229,8 +230,8 @@ If a mod is online but doesn't see your message in #verification, you can ping t
         r"\bmkfs.*": ["as it could format important data", "We do not recommend using this, if you do not want to mess with your data."],
         r"(\s*|)(>|>>)(\s*|)/dev/.*": ["as it could overwrite important data", "We do not recommend runing this, if you do not understand what the command does."],
         r"\bmv (.|\b) /dev/null\b": ["as it moves data into a black hole", "We do not recommend runing this command at all."],
-        r"(\b(wget|curl).*(sh|zsh|bash|sudo)\b)|(\b(sh|zsh|bash|sudo).*(wget|curl)\b)": ["as it downloads and executes unknown content", "Do not run this command if it includes any suspicious/untrustful URL."],
-        r"\bsudo\s*.*(\s*|)(>|>>)(\s*|)(.*\/.*|.*\..*|.*\s*)\b": ["as it can overwrite important data", "Do not run this if you don't want files to be overwritten."],
+        r"(\b(wget|curl)\s.*(sh|zsh|bash|sudo|\_)\b)|(\b(sh|zsh|bash|sudo|\_)\s.*(wget|curl)\b)": ["as it downloads and executes unknown content", "Do not run this command if it includes any suspicious/untrustful URL."],
+        r"\b(sudo|\_)\s*.*(\s*|)(>|>>)(\s*|)(.*\/.*|.*\..*|.*\s*)\b": ["as it can overwrite important data", "Do not run this if you don't want files to be overwritten."],
         r"\\xeb\\x3e\\x5b\\x31\\xc0\\x50\\x54\\x5a": ["as this is part of a very well known malicious code to erase your data", "Do not run this."],  # EXPERIMENTAL
         r"\bcat\s*/dev.*\b": ["as it creates a kernel panic", "We would not suggest running this command."],
         r"\b\^.*\^.*\b": ["as this might be a substitution", "You most likely won't need a substitution, so we suggest you to ignore this command."],
@@ -294,6 +295,7 @@ class TestingEnv:
 
     WELCOMEMSG_CHANNEL = 776900487886012466
     JOINLEAVE_CHANNEL = 776900514931146792
+    MUTECHANNEL = 776900510796087326
 
     VERIFICATIONCHANNELMESSAGE = ProductionEnv.VERIFICATIONCHANNELMESSAGE
 

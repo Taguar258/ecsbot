@@ -1,3 +1,4 @@
+from asyncio import sleep as async_sleep
 from datetime import datetime, timedelta
 
 import discord
@@ -82,6 +83,8 @@ class Moderation(commands.Cog):
     async def on_ready(self):
         """ Initialization
         """
+        await async_sleep(1)  # Wait to hopefully prevent interfering
+
         self.punishment_tick.start()
 
     @commands.Cog.listener()

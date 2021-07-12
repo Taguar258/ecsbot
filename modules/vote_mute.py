@@ -1,6 +1,8 @@
 from base64 import b64encode
+from datetime import datetime
 
 from config.config import config
+from discord import Embed
 from discord.ext import commands
 
 
@@ -43,7 +45,7 @@ class VoteMute(commands.Cog):
 
         """
         # Check if author is staff
-        if config.STAFFROLE in [role.id for role in message.author.roles]:
+        if config.STAFFROLE in [role.id for role in message.author.roles] or message.author.bot:
             return
 
         members_count = sum([1 if not member.bot else 0 async for member in message.guild.fetch_members()])
@@ -88,6 +90,8 @@ class VoteMute(commands.Cog):
             contra_moderators_count != 0) or \
            (pro_moderators_count >= 1):
 
+            log_channel = self.bot.get_channel(config.LOGCHANNEL)
+
             await message.author.add_roles(message.guild.get_role(config.MUTEDROLE))
 
             await message.channel.send(f"The member <@{message.author.id}> has been vote-muted.")
@@ -98,6 +102,21 @@ class VoteMute(commands.Cog):
             await mute_channel.send(f"[{pro_count}/{contra_count}]\n||{message.content}||")
 
             await message.delete()
+
+            date = datetime.now().strftime("%d.%m.%Y")
+
+            embed = Embed(
+
+                description=f"{message.author.mention} has been vote muted.",
+                color=config.COLOR,
+
+            )
+
+            embed.set_author(name=f"{message.author.name}#{message.author.discriminator}", icon_url=message.author.avatar_url)
+
+            embed.set_footer(text=f"ID: {message.author.id} • {date}")
+
+            await log_channel.send(embed=embed)
 
 
 def setup(bot):
