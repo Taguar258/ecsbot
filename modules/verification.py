@@ -364,6 +364,16 @@ class Verification(commands.Cog):
 
             ),
 
+            ctx.message.guild.get_role(config.NOVERIFIEDROLE):
+
+            discord.PermissionOverwrite(
+
+                read_messages=False,
+                send_messages=False,
+                read_message_history=False,
+
+            ),
+
         }
 
         vchannel = await ctx.message.guild.create_text_channel(
@@ -432,6 +442,16 @@ class NoVerification(commands.Cog):
 
             ),
 
+            guild.get_role(config.VERIFIEDROLE):
+
+            discord.PermissionOverwrite(
+
+                read_messages=False,
+                send_messages=False,
+                read_message_history=False,
+
+            ),
+
             guild.default_role:
 
             discord.PermissionOverwrite(
@@ -463,7 +483,17 @@ class NoVerification(commands.Cog):
 
         )
 
-        await vchannel.send("**Please contact us if you are not able to see all channels!\nOr try to rejoining later... sry :/**")
+        # await vchannel.send("**Please contact us if you are not able to see all channels!\nOr try to rejoining later... sry :/**")
+
+        embed = discord.Embed(
+
+            title="You will need to do the steps shown by discord (accepting the rules).",
+            description="In case you cannot access the channels even after doing these steps, please DM a moderator.",
+            color=config.COLOR,
+
+        )
+
+        await vchannel.send(embed=embed)
 
     @commands.Cog.listener()
     async def on_member_join(self, member):
@@ -487,14 +517,30 @@ class NoVerification(commands.Cog):
         # DM
         await send_embed_dm(member, config.NOVERIFICATION_WELCOMEMSG)
 
-        # Add member role
-        await member.add_roles(
+        # # Add member role | COMMENTED OUT: Due to rule screening
+        # await member.add_roles(
 
-            member.guild.get_role(config.NOVERIFIEDROLE),
+        #     member.guild.get_role(config.NOVERIFIEDROLE),
 
-            reason="Joined the server."
+        #     reason="Joined the server.",
 
-        )
+        # )
+
+    @commands.Cog.listener()
+    async def on_member_update(self, _, member):
+        """ Add NOVERIFIED role to rule screening verified members
+        """
+        if len(member.roles) <= 1 and \
+           not member.pending:
+
+            # Add member role
+            await member.add_roles(
+
+                member.guild.get_role(config.NOVERIFIEDROLE),
+
+                reason="Accepted the rules.",
+
+            )
 
 
 def setup(bot):
