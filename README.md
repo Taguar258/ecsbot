@@ -1,9 +1,29 @@
-# ecsbot
-The bot for my Discord server [Ethical Computing Society](https://discord.gg/CkMmZsR)
+# ECSbot
+Official bot of the [ECS Discord server](https://discord.gg/CkMmZsR).
 
-## Functionality
-- Gives out role if rules have been accepted (react with a checkmark on RULESMSG in RULESCHANNEL)
-- Gives out custom roles (react with specified emoji on ROLESMSG in ROLESCHANNEL)
-- Welcome Message & Reminds Users to accept the rules after 24,48 hours (Embed DM).
-- Kicks Users after not accepting the rules after 72 hours.
-- Purge command to remove every message in every channel of users independent of if they're currently on or off of the server. (by ID)
+All functions can be found under `modules/` .
+
+## ECS (Ethical Computing Society)
+
+Our Discord server provides help with topics such as coding, ethical hacking, Linux, and hardware.
+
+What makes our server different?
+
+- We have a lot of experience.
+- We have our own bot.
+- We are open to suggestions.
+- We love a good laugh and hate gatekeeping.
+- We treat everyone the same.
+- Our highest priority is the user's safety.
+- Wide variety of topics.
+- We support unique ideas.
+
+We provide help with:
+
+- Hardware
+- Python, Rust, JS, Java, C-langs, etc.
+- Ethical hacking: CTF etc.
+- Rooted devices etc.
+- Operating systems: specifically Linux.
+
+(We are also in search for staff)
