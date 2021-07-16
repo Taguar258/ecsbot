@@ -121,7 +121,7 @@ If a mod is online but doesn't see your message in #verification, you can ping t
 
     )
 
-    NOVERIFIEDROLE = "NOT SET"  # TODO
+    NOVERIFIEDROLE = 864887304149139516
 
     NOVERIFICATION_CHANNELNAME = "missing-channels"
 
@@ -252,7 +252,7 @@ If a mod is online but doesn't see your message in #verification, you can ping t
 
     MUTE_CHANNEL = 724244723023478806
 
-    TRIP_LEVEL = 0.0160213
+    TRIP_LEVEL = 0.012
 
 
 class TestingEnv:

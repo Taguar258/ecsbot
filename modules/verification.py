@@ -488,7 +488,7 @@ class NoVerification(commands.Cog):
         embed = discord.Embed(
 
             title="You will need to do the steps shown by discord (accepting the rules).",
-            description="In case you cannot access the channels even after doing these steps, please DM a moderator.",
+            description="In case you cannot access the channels even after doing these steps, please DM a moderator.\nYou can also request help here.",
             color=config.COLOR,
 
         )

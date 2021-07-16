@@ -788,7 +788,7 @@ class Moderation(commands.Cog):
         await ctx.message.channel.send(embed=embed)
 
     @commands.command(pass_context=True)
-    @commands.has_role(776900457686892614)
+    @commands.has_role(690212500784152591)
     async def clearlog(self, ctx):
         """ Delete log of a specific user
         """
