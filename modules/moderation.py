@@ -17,12 +17,11 @@ class Moderation(commands.Cog):
         self.bot = bot
 
     @tasks.loop(minutes=3)  # minutes=1
+    @db.flock
     async def punishment_tick(self):
         """ Handling of expired punishments
         """
         bancache = {}
-
-        await db.lock("punishments")
 
         now = datetime.utcnow()
 
@@ -77,8 +76,6 @@ class Moderation(commands.Cog):
 
         db["punishments"] = {"punishments": endpunishments}
 
-        db.unlock("punishments")
-
     @commands.Cog.listener()
     async def on_ready(self):
         """ Initialization
@@ -119,44 +116,65 @@ class Moderation(commands.Cog):
 
         fullname = get_full_name(member)
 
-        embed = discord.Embed(title=fullname, color=config.COLOR)
+        class UserDevice:
 
-        embed.add_field(
+            def __init__(self, member):
 
-            name="Nick",
-            value=member.display_name,
-            inline=True,
+                self.desktop = member.desktop_status
+                self.web = member.web_status
+                self.mobile = member.mobile_status
 
-        )
+                self.code = ""
 
-        embed.add_field(
+                self.code += ("d" if self.desktop else "x")
+                self.code += ("w" if self.web else "x")
+                self.code += ("m" if self.mobile else "x")
 
-            name="Username",
-            value=fullname,
-            inline=True,
+            def __repr__(self):
 
-        )
+                return f"<Device value={self.code}>"
 
-        embed.add_field(
+        device = UserDevice(member)
 
-            name="Joined",
-            value=member.joined_at.strftime("%d/%m/%Y %H:%M:%S"),
-            inline=False,
+        embed = discord.Embed(title="Whois:", color=config.COLOR)
 
-        )
+        information = {
 
-        embed.add_field(
+            "Nick": member.nick,
+            "Username": fullname,
+            "Color": member.color,
+            "Joined": member.joined_at.strftime("%d/%m/%Y %H:%M:%S"),
+            "Created": member.created_at.strftime("%d/%m/%Y %H:%M:%S"),
+            "Premium Since": ("None" if member.premium_since is None else member.premium_since.strftime("%d/%m/%Y %H:%M:%S")),
+            "Device": device,
+            "Verified": member.pending,
+            "Top Role": member.top_role,
+            "Roles": [role.name for role in member.roles],
+            "Guild Permissions": member.guild_permissions,
+            "Flags": {flag[0]: flag[1] for flag in member.public_flags},
+            "Bot": member.bot,
+            "Mention": member.mention,
 
-            name="Created",
-            value=member.created_at.strftime("%d/%m/%Y %H:%M:%S"),
-            inline=False,
+        }
 
-        )
+        for name, value in information.items():
+
+            embed.add_field(
+
+                name=name,
+                value=value,
+                inline=False,
+
+            )
+
+        embed.set_author(name=fullname, icon_url=member.avatar_url)
+
+        embed.set_footer(text=f"User ID: {member.id}")
 
         await ctx.send(embed=embed)
 
     @commands.command(pass_context=True)
-    @commands.has_role(config.MODROLE)
+    @commands.has_role(config.ROOTROLE)
     async def purge(self, ctx):
         """ Delete all messages of a specified user
         """
@@ -182,6 +200,7 @@ class Moderation(commands.Cog):
 
     @commands.command(pass_context=True)
     @commands.has_role(config.MODROLE)
+    @db.flock
     async def mute(self, ctx):
         """ Mute user for certain amount of time
         """
@@ -194,8 +213,6 @@ class Moderation(commands.Cog):
         await check_for_role(ctx, member, config.MODROLE, "muted")
 
         fullname = get_full_name(ctx.message.author)
-
-        await db.lock("punishments")
 
         punishments = db["punishments"]["punishments"]
 
@@ -229,7 +246,7 @@ class Moderation(commands.Cog):
 
         }
 
-        time_in_minutes, timestr = await get_punishment_reason_length(ctx, args, db, punishments, member, strtotimestr, strtotimemin, ["mute", "ban"], "mute")
+        time_in_minutes, timestr = await get_punishment_reason_length(ctx, args, punishments, member, strtotimestr, strtotimemin, ["mute", "ban"], "mute")
 
         # Main logic
         reason = " ".join(args[2:])
@@ -283,10 +300,6 @@ class Moderation(commands.Cog):
         # Write log
         now = datetime.utcnow()
 
-        db.unlock("punishments")
-
-        await db.lock("logs")
-
         logs = db["logs"]["logs"]
 
         logs.append(
@@ -310,24 +323,28 @@ class Moderation(commands.Cog):
 
         db["logs"] = {"logs": logs}
 
-        db.unlock("logs")
-
         await ctx.message.channel.send(f"Successfully muted {member.mention}!")
 
     @commands.command(pass_context=True)
     @commands.has_role(config.MODROLE)
+    @db.flock
     async def ban(self, ctx):
         """ Ban user for specific time and delete messages
         """
         args = parse_arguments(ctx.message.content)
 
-        member = await check_for_id(ctx, args)
+        member = await check_for_id(ctx, args, ignore_errors=True)
 
-        await check_for_role(ctx, member, config.MODROLE, "banned")
+        not_in_guild = member is None
+        if not_in_guild:
+
+            member = await self.bot.fetch_user(args[0])
+
+        if not not_in_guild:
+
+            await check_for_role(ctx, member, config.MODROLE, "banned")
 
         fullname = get_full_name(ctx.message.author)
-
-        await db.lock("punishments")
 
         punishments = db["punishments"]["punishments"]
 
@@ -365,7 +382,7 @@ class Moderation(commands.Cog):
 
         }
 
-        time_in_minutes, timestr = await get_punishment_reason_length(ctx, args, db, punishments, member, strtotimestr, strtotimemin, ["ban"], "ban")
+        time_in_minutes, timestr = await get_punishment_reason_length(ctx, args, punishments, member, strtotimestr, strtotimemin, ["ban"], "ban")
 
         # Main logic
         reason = " ".join(args[2:])
@@ -386,11 +403,19 @@ class Moderation(commands.Cog):
 
         )
 
-        await send_embed_dm(member, embed)
+        if not not_in_guild:
+
+            await send_embed_dm(member, embed)
 
         await log(ctx.message.guild, ctx.message.author, "Ban", f"banned {member.mention} for {timestr}. Reason: {reason}")
 
-        await member.ban(reason=f"Banned by {fullname} for {timestr}. Reason: {reason}", delete_message_days=config.BANDELETEMESSAGES)
+        if not not_in_guild:
+
+            await member.ban(reason=f"Banned by {fullname} for {timestr}. Reason: {reason}", delete_message_days=config.BANDELETEMESSAGES)
+
+        else:
+
+            await ctx.guild.ban(member)
 
         # Write data
         endtime = datetime.utcnow() + timedelta(minutes=time_in_minutes)
@@ -417,10 +442,6 @@ class Moderation(commands.Cog):
         # Write log
         now = datetime.utcnow()
 
-        db.unlock("punishments")
-
-        await db.lock("logs")
-
         logs = db["logs"]["logs"]
 
         logs.append(
@@ -444,12 +465,11 @@ class Moderation(commands.Cog):
 
         db["logs"] = {"logs": logs}
 
-        db.unlock("logs")
-
         await ctx.message.channel.send(f"Successfully banned {member.mention}!")
 
     @commands.command(pass_context=True)
     @commands.has_role(config.MODROLE)
+    @db.flock
     async def unmute(self, ctx):
         """ Unmute muted member
         """
@@ -458,8 +478,6 @@ class Moderation(commands.Cog):
         member = await check_for_id(ctx, args)
 
         fullname = get_full_name(ctx.message.author)
-
-        await db.lock("punishments")
 
         punishments = db["punishments"]["punishments"]
 
@@ -478,8 +496,6 @@ class Moderation(commands.Cog):
 
         if not muted and muted_role:
 
-            db.unlock("punishments")
-
             await member.remove_roles(muterole, reason="Unmuted by ")
 
             await ctx.message.channel.send(f"Successfully unmuted {member.mention}.")
@@ -487,8 +503,6 @@ class Moderation(commands.Cog):
             return
 
         elif not muted:
-
-            db.unlock("punishments")
 
             await ctx.message.channel.send(f"The user {member.mention} is not muted.")
 
@@ -507,8 +521,6 @@ class Moderation(commands.Cog):
 
         db["punishments"] = {"punishments": new_punishments}
 
-        db.unlock("punishments")
-
         await send_embed_dm(member, config.UNMUTEMSG)
 
         await log(ctx.message.guild, ctx.message.author, "Unmuted", f"unmuted {member.mention}")
@@ -517,6 +529,7 @@ class Moderation(commands.Cog):
 
     @commands.command(pass_context=True)
     @commands.has_role(config.MODROLE)
+    @db.flock
     async def unban(self, ctx):
         """ Unban banned user
         """
@@ -540,8 +553,6 @@ class Moderation(commands.Cog):
 
         fullname = get_full_name(ctx.message.author)
 
-        await db.lock("punishments")
-
         punishments = db["punishments"]["punishments"]
 
         banned = False
@@ -557,8 +568,6 @@ class Moderation(commands.Cog):
 
         if not banned and server_banned:
 
-            db.unlock("punishments")
-
             await ctx.message.guild.unban(user, reason=f"Unbanned by {fullname}")
 
             await ctx.message.channel.send(f"Successfully unbanned {user.mention}.")
@@ -566,8 +575,6 @@ class Moderation(commands.Cog):
             return
 
         elif not banned:
-
-            db.unlock("punishments")
 
             await ctx.message.channel.send(f"The user {user.mention} is not banned.")
 
@@ -586,8 +593,6 @@ class Moderation(commands.Cog):
 
         db["punishments"] = {"punishments": new_punishments}
 
-        db.unlock("punishments")
-
         # await send_embed_dm(user, config.UNBANMSG)
 
         await log(ctx.message.guild, ctx.message.author, "Unbanned", f"unbanned {user.mention}")
@@ -596,6 +601,7 @@ class Moderation(commands.Cog):
 
     @commands.command(pass_context=True)
     @commands.has_role(config.MODROLE)
+    @db.flock
     async def kick(self, ctx):
         """ Kick a member
         """
@@ -615,8 +621,6 @@ class Moderation(commands.Cog):
             return
 
         reason = " ".join(args[1:])
-
-        await db.lock("logs")
 
         now = datetime.utcnow()
 
@@ -642,8 +646,6 @@ class Moderation(commands.Cog):
 
         db["logs"] = {"logs": logs}
 
-        db.unlock("logs")
-
         embed = config.KICKMSG
 
         embed.add_field(
@@ -663,6 +665,7 @@ class Moderation(commands.Cog):
 
     @commands.command(pass_context=True)
     @commands.has_role(config.MODROLE)
+    @db.flock
     async def warn(self, ctx):
         """ Warn a member
         """
@@ -678,8 +681,6 @@ class Moderation(commands.Cog):
             return
 
         reason = " ".join(args[1:])
-
-        await db.lock("logs")
 
         now = datetime.utcnow()
 
@@ -704,8 +705,6 @@ class Moderation(commands.Cog):
         )
 
         db["logs"] = {"logs": logs}
-
-        db.unlock("logs")
 
         embed = config.WARNMSG
 
@@ -737,7 +736,7 @@ class Moderation(commands.Cog):
 
         else:
 
-            full_name = get_full_name(ctx.message.author)
+            full_name = get_full_name(member)
 
         embed = discord.Embed(
 
@@ -788,15 +787,14 @@ class Moderation(commands.Cog):
         await ctx.message.channel.send(embed=embed)
 
     @commands.command(pass_context=True)
-    @commands.has_role(690212500784152591)
+    @commands.has_role(config.ROOTROLE)
+    @db.flock
     async def clearlog(self, ctx):
         """ Delete log of a specific user
         """
         args = parse_arguments(ctx.message.content)
 
         member = await check_for_id(ctx, args)
-
-        await db.lock("logs")
 
         new_log = []
 
@@ -807,8 +805,6 @@ class Moderation(commands.Cog):
                 new_log.append(log_entry)
 
         db["logs"] = {"logs": new_log}
-
-        db.unlock("logs")
 
         await ctx.message.channel.send(f"Cleared modlog of {member.mention}.")
 

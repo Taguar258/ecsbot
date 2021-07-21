@@ -1,8 +1,15 @@
 # Server-specific Files
 data/
 
+# Testing
+test*.py
+
+# TODO
+TODO.md
+
 # bak
 modules/.old
+*.bak
 
 # Don't leak the token
 tokens.py

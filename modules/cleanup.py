@@ -20,10 +20,15 @@ class Cleanup(commands.Cog):
         await channel.purge()
 
         info_msg = await ctx.message.channel.send("Successfully purged the mute-appeal channel.")
-        await info_msg.add_reaction(config.REACT_SUCCESS)
 
-        await async_sleep(6)
-        await info_msg.delete()
+        if ctx.message.channel.id == channel.id:  # Temporary message if send in mute channel
+
+            await ctx.message.delete()
+
+            await info_msg.add_reaction(config.REACT_SUCCESS)
+
+            await async_sleep(6)
+            await info_msg.delete()
 
 
 def setup(bot):

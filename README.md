@@ -17,6 +17,8 @@ What makes our server different?
 - Our highest priority is the user's safety.
 - Wide variety of topics.
 - We support unique ideas.
+- Community crypto challenges.
+- (CTF Team)
 
 We provide help with:
 

@@ -14,11 +14,10 @@ class Verification(commands.Cog):
         self.bot = bot
 
     @tasks.loop(hours=2)  # minutes=1
+    @db.flock
     async def reminder_tick(self):
         """ Auto kick inactive users and warn them
         """
-        await db.lock("reminds")
-
         time_now = datetime.utcnow()
 
         reminds = db["reminds"]["reminds"]
@@ -83,8 +82,6 @@ class Verification(commands.Cog):
 
         db["reminds"] = {"reminds": endreminds}
 
-        db.unlock("reminds")
-
     @commands.Cog.listener()
     async def on_ready(self):
         """ Initialization
@@ -136,6 +133,16 @@ class Verification(commands.Cog):
 
             ),
 
+            guild.get_role(config.BOTLISTINGROLE):
+
+            discord.PermissionOverwrite(
+
+                read_messages=False,
+                send_messages=False,
+                read_message_history=False,
+
+            ),
+
         }
 
         vchannel = await guild.create_text_channel(
@@ -151,6 +158,7 @@ class Verification(commands.Cog):
         await vchannel.send(config.VERIFICATIONCHANNELMESSAGE)
 
     @commands.Cog.listener()
+    @db.flock
     async def on_member_join(self, member):
         """ Send information to user and add set reminder
         """
@@ -173,8 +181,6 @@ class Verification(commands.Cog):
         await send_embed_dm(member, config.WELCOMEMSG)
 
         # Reminder
-        await db.lock("reminds")
-
         reminds = db["reminds"]["reminds"]
 
         reminder = datetime.utcnow() + timedelta(hours=24)
@@ -198,8 +204,6 @@ class Verification(commands.Cog):
 
         db["reminds"] = {"reminds": reminds}
 
-        db.unlock("reminds")
-
         # Add unverified role
         await member.add_roles(
 
@@ -210,11 +214,10 @@ class Verification(commands.Cog):
         )
 
     @commands.Cog.listener()
+    @db.flock
     async def on_member_remove(self, member):
         """ On member left
         """
-        await db.lock("reminds")
-
         reminds = db["reminds"]["reminds"]
 
         endreminds = []
@@ -227,13 +230,11 @@ class Verification(commands.Cog):
 
         db["reminds"] = {"reminds": endreminds}
 
-        db.unlock("reminds")
-
     @commands.command(pass_context=True)
     @commands.has_role(config.STAFFROLE)
+    @db.flock
     async def verify(self, ctx):
         """ Remove unverified role from user and append member role
-        TODO: Rename user role to member
         """
         args = parse_arguments(ctx.message.content)
 
@@ -263,8 +264,6 @@ class Verification(commands.Cog):
         await log(ctx.message.guild, ctx.message.author, "Verification", f"verified {member.mention}")
 
         # Remove data entry
-        await db.lock("reminds")
-
         reminds = db["reminds"]["reminds"]
 
         endreminds = []
@@ -277,10 +276,9 @@ class Verification(commands.Cog):
 
         db["reminds"] = {"reminds": endreminds}
 
-        db.unlock("reminds")
-
     @commands.command(pass_context=True)
     @commands.has_role(config.STAFFROLE)
+    @db.flock
     async def deny(self, ctx):
         """ Ban users due to verification denial
         """
@@ -297,8 +295,6 @@ class Verification(commands.Cog):
         await ctx.message.channel.send(f"Successfully denied {member.mention}!")
 
         # Remove data entry
-        await db.lock("reminds")
-
         reminds = db["reminds"]["reminds"]
 
         endreminds = []
@@ -310,8 +306,6 @@ class Verification(commands.Cog):
                 endreminds.append(reminder)
 
         db["reminds"] = {"reminds": endreminds}
-
-        db.unlock("reminds")
 
     @commands.command(pass_context=True)
     @commands.has_role(config.STAFFROLE)
@@ -374,6 +368,16 @@ class Verification(commands.Cog):
 
             ),
 
+            ctx.message.guild.get_role(config.BOTLISTINGROLE):
+
+            discord.PermissionOverwrite(
+
+                read_messages=False,
+                send_messages=False,
+                read_message_history=False,
+
+            ),
+
         }
 
         vchannel = await ctx.message.guild.create_text_channel(
@@ -395,9 +399,6 @@ class Verification(commands.Cog):
 
 class NoVerification(commands.Cog):
     """ Cog temporarily disabling old verification system
-    TODO: Make sure non verified folks can read stuff too.
-          Do this by renaming user to senior-member and
-          creating new role named member: NOVERIFIEDROLE.
     """
     def __init__(self, bot):
 
@@ -469,6 +470,16 @@ class NoVerification(commands.Cog):
                 read_messages=True,
                 send_messages=True,
                 read_message_history=True,
+
+            ),
+
+            guild.get_role(config.BOTLISTINGROLE):
+
+            discord.PermissionOverwrite(
+
+                read_messages=False,
+                send_messages=False,
+                read_message_history=False,
 
             ),
 

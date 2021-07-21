@@ -17,11 +17,10 @@ class PublicHelp(commands.Cog):
         self.bot = bot
 
     @tasks.loop(hours=1)
+    @db.flock
     async def public_help_tick(self):
         """ Autodelete inactive channels
         """
-        await db.lock("public_help")
-
         phelp_data = db["public_help"]["current_channels"]
         freeze = db["public_help"]["freeze"]
 
@@ -54,8 +53,6 @@ class PublicHelp(commands.Cog):
                 await channel.delete()
 
                 db["public_help"] = {"current_channels": end_data, "freeze": freeze}
-
-        db.unlock("public_help")
 
     @commands.Cog.listener()
     async def on_ready(self):
@@ -101,7 +98,7 @@ class PublicHelp(commands.Cog):
 
         return await channel.send(embed=embed)
 
-    async def request_permission(self, db, output_channel, channel, author, client, args):  # TODO: Improvised
+    async def request_permission(self, output_channel, channel, author, client, args):
         """ Validate selection by asking for message
         """
         if "-y" not in args:
@@ -118,15 +115,11 @@ class PublicHelp(commands.Cog):
 
                 except TimeoutError:
 
-                    db.unlock("public_help")
-
                     await self.tmp_msg("Timeout was raised.", output_channel)
 
                     raise IgnoreException
 
             if req_msg.author != author or req_msg.content != "YES" or req_msg.channel.id != channel.id:
-
-                db.unlock("public_help")
 
                 await self.tmp_msg("Message has not been answered with YES.\nYou could try again using the -y argument to bypass this step.", channel, delay=10)
 
@@ -152,7 +145,8 @@ class PublicHelp(commands.Cog):
         ],
 
     )
-    async def new(self, ctx: SlashContext, title):  # TODO
+    @db.flock
+    async def new(self, ctx: SlashContext, title):
         """ Create a new help channel
         """
         # args = parse_arguments(ctx.message.content)
@@ -161,15 +155,11 @@ class PublicHelp(commands.Cog):
 
         category = self.bot.get_channel(config.PHELPCATEGORY)
 
-        await db.lock("public_help")
-
         phelp_data = db["public_help"]["current_channels"]
         freeze = db["public_help"]["freeze"]
 
         # Check for valid request
         if freeze:
-
-            db.unlock("public_help")
 
             await self.tmp_msg("This feature is currently locked.", ctx)
 
@@ -177,15 +167,11 @@ class PublicHelp(commands.Cog):
 
         if config.PHELP_MUTE_ROLE in [role.id for role in ctx.author.roles]:
 
-            db.unlock("public_help")
-
             await self.tmp_msg("You don't have permission to use this feature.", ctx)
 
             return
 
         # if not args.check(0):
-
-        #     db.unlock("public_help")
 
         #     await self.tmp_msg("Please supply a title.", ctx.message.channel)
 
@@ -195,8 +181,6 @@ class PublicHelp(commands.Cog):
 
         if len(title) > config.PHELP_MAX_TITLE:
 
-            db.unlock("public_help")
-
             await self.tmp_msg("Please supply a shorter title.", ctx)
 
             return
@@ -205,15 +189,11 @@ class PublicHelp(commands.Cog):
 
             if data["user_id"] == ctx.author.id:
 
-                db.unlock("public_help")
-
                 await self.tmp_msg("You are only allowed to have one public help channel.", ctx)
 
                 return
 
         if len(category.channels) >= config.PHELP_MAX_CHANNELS:
-
-            db.unlock("public_help")
 
             await self.tmp_msg(f"Only {config.PHELP_MAX_CHANNELS} public help channels are allowed.", ctx)
 
@@ -222,8 +202,6 @@ class PublicHelp(commands.Cog):
         for check_channel in category.channels:
 
             if check_channel.topic == str(ctx.author.id):
-
-                db.unlock("public_help")
 
                 await self.tmp_msg("You are only allowed to have one public help channel.", ctx)
 
@@ -273,8 +251,6 @@ class PublicHelp(commands.Cog):
 
         db["public_help"] = {"current_channels": phelp_data, "freeze": freeze}
 
-        db.unlock("public_help")
-
         await asyc_sleep(10)
         await creating_msg.delete()
 
@@ -295,22 +271,19 @@ class PublicHelp(commands.Cog):
         ],
 
     )
-    async def close(self, ctx: SlashContext, y_skip=""):  # TODO
+    @db.flock
+    async def close(self, ctx: SlashContext, y_skip=""):
         """ Close your public help channel
         """
         # args = parse_arguments(ctx.message.content)
 
         # await ctx.message.delete()
 
-        await db.lock("public_help")
-
         phelp_data = db["public_help"]["current_channels"]
         freeze = db["public_help"]["freeze"]
 
         # Check for valid request
         if freeze:
-
-            db.unlock("public_help")
 
             await self.tmp_msg("This feature is currently locked.", ctx)
 
@@ -324,14 +297,12 @@ class PublicHelp(commands.Cog):
 
         if str(ctx.author.id) not in list_for_check:
 
-            db.unlock("public_help")
-
             await self.tmp_msg("You did not create a channel: No channel to delete.", ctx)
 
             return
 
         # Ask for permission #
-        await self.request_permission(db, ctx, ctx.channel, ctx.author, self.bot, [y_skip])
+        await self.request_permission(ctx, ctx.channel, ctx.author, self.bot, [y_skip])
 
         # Delete Channel #
         end_data = []
@@ -350,15 +321,11 @@ class PublicHelp(commands.Cog):
 
         db["public_help"] = {"current_channels": end_data, "freeze": freeze}
 
-        db.unlock("public_help")
-
         if delete_channel.topic == str(ctx.author.id):
 
             await delete_channel.delete(reason="Help channel deletion requested.")
 
         else:
-
-            db.unlock("public_help")
 
             await self.tmp_msg("Fatal Exception author id does not match.", ctx)
 
@@ -389,6 +356,7 @@ class PublicHelp(commands.Cog):
 
     @commands.command(pass_context=True)
     @commands.has_role(config.MODROLE)
+    @db.flock
     async def fclose(self, ctx):
         """ Force close public help channel
         """
@@ -396,15 +364,11 @@ class PublicHelp(commands.Cog):
 
         args = parse_arguments(ctx.message.content)
 
-        await db.lock("public_help")
-
         phelp_data = db["public_help"]["current_channels"]
         freeze = db["public_help"]["freeze"]
 
         # Check for valid request
         if not args.check(0, re=r"^[0-9]*$"):
-
-            db.unlock("public_help")
 
             await self.tmp_msg("Please supply a valid ID.", ctx.message.channel)
 
@@ -418,14 +382,12 @@ class PublicHelp(commands.Cog):
 
         if args[0] not in list_for_check:
 
-            db.unlock("public_help")
-
             await self.tmp_msg("Please supply a valid ID.", ctx.message.channel)
 
             return
 
         # Ask for permission #
-        await self.request_permission(db, ctx.message.channel, ctx.message.channel, ctx.message.author, self.bot, args)
+        await self.request_permission(ctx.message.channel, ctx.message.channel, ctx.message.author, self.bot, args)
 
         # Delete Channel #
         end_data = []
@@ -442,8 +404,6 @@ class PublicHelp(commands.Cog):
 
         db["public_help"] = {"current_channels": end_data, "freeze": freeze}
 
-        db.unlock("public_help")
-
         delete_channel = self.bot.get_channel(int(delete_channel_id))
 
         await delete_channel.delete(reason="Force deletion of help channel.")
@@ -452,7 +412,8 @@ class PublicHelp(commands.Cog):
 
     @commands.command(pass_context=True)
     @commands.has_role(config.MODROLE)
-    async def rename(self, ctx):  # TODO: Rework function
+    @db.flock
+    async def rename(self, ctx):
         """ Rename an existing help channel
         """
         args = parse_arguments(ctx.message.content)
@@ -460,8 +421,6 @@ class PublicHelp(commands.Cog):
         await ctx.message.delete()
 
         category = self.bot.get_channel(config.PHELPCATEGORY)
-
-        await db.lock("public_help")
 
         phelp_data = db["public_help"]["current_channels"]
         freeze = db["public_help"]["freeze"]
@@ -471,21 +430,15 @@ class PublicHelp(commands.Cog):
 
             await self.tmp_msg("Please supply a valid ID.", ctx.message.channel)
 
-            db.unlock("public_help")
-
             return
 
         if int(args[0]) not in [data["channel"] for data in phelp_data]:
 
             await self.tmp_msg("Please supply a valid ID.", ctx.message.channel)
 
-            db.unlock("public_help")
-
             return
 
         if not args.check(1):
-
-            db.unlock("public_help")
 
             await self.tmp_msg("Please supply a title.", ctx.message.channel)
 
@@ -494,8 +447,6 @@ class PublicHelp(commands.Cog):
         title = " ".join(args[1:])
 
         if len(title) > config.PHELP_MAX_TITLE:
-
-            db.unlock("public_help")
 
             await self.tmp_msg("Please supply a shorter title.", ctx)
 
@@ -544,8 +495,6 @@ class PublicHelp(commands.Cog):
         )
 
         db["public_help"] = {"current_channels": phelp_data, "freeze": freeze}
-
-        db.unlock("public_help")
 
         await asyc_sleep(10)
         await info_msg.delete()
@@ -603,20 +552,19 @@ class PublicHelp(commands.Cog):
 
     @commands.command(pass_context=True)
     @commands.has_role(config.DEVROLE)
+    @db.flock
     async def phdbflush(self, ctx):
-
+        """ Flush public_help db
+        """
         await ctx.message.delete()
 
-        await db.lock("public_help")
-
-        db["public_help"] = {"current_channels": [], "freeze": False}
-
-        db.unlock("public_help")
+        db["public_help"] = config.DATA_FILES_EMPTY["public_help"]
 
         await self.tmp_msg("Successfully flushed data.", ctx.message.channel, reaction=config.REACT_SUCCESS)
 
     @commands.command(pass_context=True)
     @commands.has_role(config.MODROLE)
+    @db.flock
     async def phfreeze(self, ctx):
         """ Lock public help system
         """
@@ -624,13 +572,9 @@ class PublicHelp(commands.Cog):
 
         args = parse_arguments(ctx.message.content)
 
-        await db.lock("public_help")
-
         phelp_data = db["public_help"]["current_channels"]
 
         if not args.check(0, re=r"(on|off)"):
-
-            db.unlock("public_help")
 
             await self.tmp_msg("No matching argument passed.", ctx.message.channel)
 
@@ -646,14 +590,13 @@ class PublicHelp(commands.Cog):
 
         db["public_help"] = {"current_channels": phelp_data, "freeze": freeze}
 
-        db.unlock("public_help")
-
         await self.tmp_msg("Successfully applied.", ctx.message.channel, reaction=config.REACT_SUCCESS)
 
     @commands.command(pass_context=True)
     @commands.has_role(config.DEVROLE)
     async def phdb(self, ctx):
-
+        """ Print db to chat (DEBUG)
+        """
         await ctx.message.delete()
 
         with open("data/public_help.json", "r") as db:
@@ -661,24 +604,6 @@ class PublicHelp(commands.Cog):
             db = db.read()
 
         await self.tmp_msg(f'`{db}`', ctx.message.channel, reaction=config.REACT_SUCCESS, delay=15)
-
-    # async def help_help(channel, mod):
-    #     """ TODO: Unedited, dead code, replaced with slash commands, remove from config as well
-    #     """
-    #     if mod:
-    #         help_message = config.HELP_MESSAGE_MODS
-    #     else:
-    #         help_message = config.HELP_MESSAGE_USER
-
-    #     embed = Embed(description=" ", color=config.COLOR)
-
-    #     for line in help_message.split("\n"):
-    #         if line != "":
-    #             part = line.split(" | ")
-    #             embed.add_field(name=part[0], value=part[1], inline=False)
-    #     msg = await channel.send(embed=embed)
-    #     await sleep(15)
-    #     await msg.delete()
 
 
 def setup(bot):

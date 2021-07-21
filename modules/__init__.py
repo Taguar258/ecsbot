@@ -1,14 +1,17 @@
 import json
 import pickle
-from asyncio import coroutine
+from asyncio import coroutine, iscoroutinefunction
 from asyncio import sleep as async_sleep
 from copy import deepcopy
+from functools import wraps
 from re import finditer, match, sub
 from time import sleep
 from traceback import format_stack, print_exc
 
 from config.config import config
 from discord import Embed, errors
+from discord.ext import tasks
+from discord.ext.commands import Context
 
 # ----------- ARGUMENT PARSER -----------
 
@@ -59,7 +62,7 @@ def parse_arguments(content):
 class IgnoreException(Exception): pass
 
 
-async def check_for_id(ctx, args):
+async def check_for_id(ctx, args, ignore_errors=False):
     """ Check for user id or mention, otherwise send error message
     """
     if not args.check(0, re=r"^[0-9]*$"):
@@ -74,9 +77,15 @@ async def check_for_id(ctx, args):
 
     except (errors.NotFound, errors.HTTPException):
 
-        await ctx.message.channel.send("Could not fetch member.")
+        if not ignore_errors:
 
-        raise IgnoreException
+            await ctx.message.channel.send("Could not fetch member.")
+
+            raise IgnoreException
+
+        else:
+
+            return None
 
     return member
 
@@ -97,7 +106,7 @@ def get_full_name(member):
     return f"{member.name}#{member.discriminator}"
 
 
-async def get_punishment_reason_length(ctx, args, db, punishments, member, strtotimestr, strtotimemin, sub_punishments, action_name):
+async def get_punishment_reason_length(ctx, args, punishments, member, strtotimestr, strtotimemin, sub_punishments, action_name):
     """ Return length and reason of punishment
     Raise Error if not defined.
     """
@@ -110,15 +119,11 @@ async def get_punishment_reason_length(ctx, args, db, punishments, member, strto
         if punishment["userid"] == member.id and \
            punishment["type"] in sub_punishments:
 
-            db.unlock("punishments")
-
             await ctx.message.channel.send(f"This user is already {action_name}ed!")
 
             raise IgnoreException
 
     if not args.check(1, re="|".join(strtotimemin.keys())):
-
-        db.unlock("punishments")
 
         await ctx.message.channel.send(f"Invalid or no time period specified\n({', '.join(strtotimestr)})")
 
@@ -128,8 +133,6 @@ async def get_punishment_reason_length(ctx, args, db, punishments, member, strto
     time_in_minutes = strtotimemin[args[1]]
 
     if not args.check(2):
-
-        db.unlock("punishments")
 
         await ctx.message.channel.send("No Reason specified.")
 
@@ -167,11 +170,11 @@ async def send_embed_dm(member, embed):
 
         if isinstance(embed_footer.text, str):
 
-            embed_footer.text += "\n[Messages sent here are ignored]"
+            embed_footer.text += "\n[Messages sent here are being ignored]"
 
         else:
 
-            embed_footer.text = "[Messages sent here are ignored]"
+            embed_footer.text = "[Messages sent here are being ignored]"
 
         new_embed = deepcopy(embed)
         new_embed.set_footer(**embed_footer.__dict__)
@@ -197,28 +200,24 @@ class FileLock(Exception): pass
 
 class DataHandler:
     """ Save data in memory and periodiacally stores it on disk
-    Should catch process interrupts too.
-
-    TODO: Add lock for file rather than all data
+        Prevents interfering of data by queueing functions
     """
     def __init__(self):
 
-        # Static Variables
-        self._save_frequency = 60  # seconds
-        self._backup_frequency = 300  # seconds
-        self._delay = 1
-        self._iter_timeout = round(90 // self._delay)  # 1.5 min
-
+        # (Static) Variables
         self._data_files = config.DATA_FILES
+        self._warning_threshold = 8  # On len(self._queue) warn user
 
-        # Dynamic Variables
-        self._file_lock = {file: False for file in self._data_files}
-        self._last_lock = None  # Security warning due to file lock rewrite
+        # (DYNAMIC) Queue Variables
+        self._queue = []
+        self._return_queue = {}
 
+        # (DANYMIC) DATA
         self.data = self._read_from_disk()
 
         self._edited_data = {key: 0 for key in self.data.keys()}
 
+    # Magic functions for data modification
     def __getitem__(self, data_name):
         """ Return data from memory
         """
@@ -229,27 +228,12 @@ class DataHandler:
     def __setitem__(self, data_name, new_data):
         """ Write new data to memory
         """
-        if self._last_lock == data_name:
-
-            pass
-
-        elif self._last_lock is None:
-
-            raise FileLock(f"no data lock for {new_data} data")
-
-        elif self._last_lock is not new_data:
-
-            raise FileLock(f"data lock not matching with {new_data} data")
-
-        else:
-
-            raise FileLock
-
         self.__check_data_exist(data_name)
 
         self.data[data_name] = new_data
         self._edited_data[data_name] = 1
 
+    # Checking functions
     def __check_data_exist(self, data_name):
         """ Check if data name in data files, otherwise throw error
         """
@@ -279,6 +263,7 @@ class DataHandler:
 
                 yield nested
 
+    # Data-storing handeling
     def _write_to_disk(self):
         """ Write data from memory to disk
         """
@@ -307,33 +292,27 @@ class DataHandler:
 
         return data
 
-    @coroutine
+    # Tasks of storing data to disk
+    @tasks.loop(seconds=config.BACKUP_FREQUENCY)
+    async def _auto_backup(self):
+        """ Write data to disk using pickle in case of issues
+        """
+        with open("data/backup.pickle", "wb") as pickle_file:
+
+            pickle.dump(self.data, pickle_file)
+
+    @tasks.loop(seconds=config.SAVE_FREQUENCY)
     async def _auto_save(self):
         """ Write data to disk every x seconds
         """
-        while True:
+        self._write_to_disk()
 
-            await async_sleep(self._save_frequency)
-
-            self._write_to_disk()
-
-    @coroutine
-    async def _backup(self):
-        """ Write data to disk using pickle in case of issues
-        """
-        while True:
-
-            await async_sleep(self._backup_frequency)
-
-            with open("data/backup.pickle", "wb") as pickle_file:
-
-                pickle.dump(self.data, pickle_file)
-
+    # Safety catches
     def catch(self, bot, func, *argv):
         """ Save to disk if exception
         """
-        bot.loop.create_task(self._auto_save())
-        bot.loop.create_task(self._backup())
+        self._auto_save.start()
+        self._auto_backup.start()
 
         try:
 
@@ -349,65 +328,80 @@ class DataHandler:
 
             print_exc()
 
-    async def lock(self, data_name):
-        """ Lock file (only one process at a time)
+    # Main queue handeling
+    @tasks.loop(seconds=1)
+    async def _queue_handler(self):
+        """ Queue handler
         """
-        for _ in range(self._iter_timeout):  # Might cause issues if qeue too long
+        if len(self._queue) >= 1:
 
-            if self._file_lock[data_name]:
+            # Remove last entry
+            func = self._queue.pop(0)
 
-                await async_sleep(self._delay)
+            # Run function
+            try:
 
-            else:
+                return_value = await func[0](*func[1][0], **func[1][1])
 
-                break
+            finally:
 
-        if self._file_lock[data_name]:
-            print("[w] File lock timeout")
+                return_value = None
 
-        self._file_lock[data_name] = True
-        self._last_lock = data_name
+            # Send return values back to flock
+            self._return_queue[func[0].__id__] = return_value
 
-    def unlock(self, data_name):
-        """ Unlock file
+        else:
+
+            # Stop loop for less cpu utilization
+            self._queue_handler.stop()
+
+    def flock(self, func):
+        """ Decorator queueing functions
         """
-        if self._last_lock == data_name or \
-           self._last_lock is None:
+        async def decorator_function(*args, **kwargs):
+            """ Decorator Frame
+            """
+            # Setting unique id
+            func.__id__ = str(id(func))
 
-            pass
+            # Warn user on long queue
+            if len(self._queue) >= self._warning_threshold:
 
-        elif data_name not in self._file_lock.keys():
+                for pos in [0, 1]:  # first argument might be self
 
-            raise KeyError
+                    if (len(args) - 1) >= pos and \
+                       isinstance(args[pos], Context):
 
-        elif self._last_lock != data_name:  # Maybe unnecessary
+                        await args[pos].channel.send("Due to a long action queue, there might be some action delays.")
 
-            print("-------------------------------------")
-            print("".join(format_stack()[:-1]))
-            print(f"File: {self._last_lock}\n")
-            print("[w] Unlock last file before relocking")
-            print("-------------------------------------")
+            # Run queue_handler if inactive
+            if not self._queue_handler.is_running():
 
-        elif self._last_lock is not None:
+                self._queue_handler.start()
 
-            print("-------------------------------------")
-            print("".join(format_stack()[:-1]))
-            print(f"File: {self._last_lock}\n")
-            print("[w] Unlock last file")
-            print("-------------------------------------")
+            self._queue.append([func, (args, kwargs)])
 
-        self._file_lock[data_name] = False
-        self._last_lock = None
+            # Wait for return
+            while True:
 
-    def write(self, data_name, new_data):
-        """ Write new data to memory
-        """
-        self.__setitem__(data_name, new_data)
+                if func.__id__ in self._return_queue:
 
-    def read(self, data_name):
-        """ Function calls self.__getitem__()
-        """
-        return self.__getitem__(data_name)
+                    break
+
+                else:
+
+                    await async_sleep(1)
+
+            # Return value and delete from return queue
+            return_value = self._return_queue[func.__id__]
+            del self._return_queue[func.__id__]
+
+            return return_value
+
+        # Change name to keep command name
+        decorator_function.__name__ = func.__name__
+
+        return decorator_function
 
 
 db = DataHandler()

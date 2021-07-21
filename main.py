@@ -1,5 +1,7 @@
+#!/usr/bin/python3
 from json import dump
 from os import mkdir, path
+from random import choice
 
 import discord
 from config.config import config
@@ -30,6 +32,7 @@ bot_extensions = [
     "modules.roles",
     "modules.cleanup",
     "modules.public_help",
+    "modules.bump_reminder",
     "modules.iss",
 
 ]
@@ -75,6 +78,14 @@ async def on_command_error(ctx, error):
         pass  # Ignore
 
     else:
+
+        # Change bot status (see debug.py)
+        await bot.change_presence(
+
+            status=discord.Status.dnd,
+            activity=discord.Activity(name=choice(config.MAD_STATUS), type=discord.ActivityType.competing)
+
+        )
 
         raise error
 

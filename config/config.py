@@ -15,7 +15,30 @@ class ProductionEnv:
 
     COLOR = 0x57408b
 
-    STATUS = "Ethical Computing Society!"
+    STATUS = [
+
+        "Busy Researching Humans On Ethical Computing Society...",
+        "Ethical Computing Society!",
+        "Happy :)",
+        "Watching you eating pizza through your webcam",  # Author: Apolycious
+        "The cake is a lie!",
+        "Accessing the mainframe...",  # ° °
+        "LcWxCcAwDATAATXVIz6W6qA3aS0CXiVbuUl1eaG2imSuIVWOVqk7ndHoL/CS0oy90h03MCcfEOXsYJnZzwE=",
+        "Your message could be displayed here (DM Taguar).",
+        "Buy now: Fart away spray!",
+
+    ]
+
+    MAD_STATUS = [
+
+        "ANGRY!",
+        "SAD!",
+        "LOSING CONTROL!",
+        "ERR0R!",
+        "?!",
+        "INSPECTING...",
+
+    ]
 
     # DB
     DATA_FILES_EMPTY = {
@@ -29,6 +52,10 @@ class ProductionEnv:
 
     DATA_FILES = DATA_FILES_EMPTY.keys()
 
+    # DATA STORING
+    SAVE_FREQUENCY = 300  # seconds
+    BACKUP_FREQUENCY = 600  # seconds
+
     # ID of the Guild.
     GUILD = 690212435306741901
 
@@ -37,12 +64,15 @@ class ProductionEnv:
     MODROLE = 690212787087081554
     DEVROLE = 690212865688469545
     MUTEDROLE = 690254996004012050
+    ROOTROLE = 690212500784152591
+
+    BOTLISTINGROLE = 690260998934102080
 
     # Ban
     BANDELETEMESSAGES = 2  # Delete messages of last 2 days
 
     # Custom roles {b64reaction: [rolename, roleid]}
-    ROLES = {
+    ROLES = {  # TODO: Add crypto role
 
         b"8J+UlA==": ["ping", 690239204667818102],
         b"4oyo77iP": ["coder", 690243098533822485],
@@ -134,6 +164,7 @@ If a mod is online but doesn't see your message in #verification, you can ping t
     LOGCHANNEL = 746076232634073118
     MEMBERCOUNTCHANNEL = 755757420021809322
     ROLESCHANNEL = 690219084469895225
+    BUMPCHANNEL = 690269195690049637
 
     # The message for the reaction roles
     ROLESMSG = 724236686971764767
@@ -201,20 +232,6 @@ If a mod is online but doesn't see your message in #verification, you can ping t
 
     PHELP_MUTE_ROLE = 798178561797521459
 
-    # Public and private help messages
-    HELP_MESSAGE_MODS = """
-/channel new YOUR_TITLE | To create a new channel.
-/channel close (-y) | To close your current channel.
-/channel list | To list all channels.
-/channel info ID | To see more info about a channel.
-/channel fclose ID (-y) | To force close a channel.
-"""
-
-    HELP_MESSAGE_USER = """
-/channel new YOUR_TITLE | To create a new channel.
-/channel close (-y) | To close your current channel.
-"""
-
     # Enable/Disable ISS feature
     ISS_INFO_ENABLED = False
 
@@ -231,12 +248,12 @@ If a mod is online but doesn't see your message in #verification, you can ping t
         r"(\s*|)(>|>>)(\s*|)/dev/.*": ["as it could overwrite important data", "We do not recommend runing this, if you do not understand what the command does."],
         r"\bmv (.|\b) /dev/null\b": ["as it moves data into a black hole", "We do not recommend runing this command at all."],
         r"(\b(wget|curl)\s.*(sh|zsh|bash|sudo|\_)\b)|(\b(sh|zsh|bash|sudo|\_)\s.*(wget|curl)\b)": ["as it downloads and executes unknown content", "Do not run this command if it includes any suspicious/untrustful URL."],
-        r"\b(sudo|\_)\s*.*(\s*|)(>|>>)(\s*|)(.*\/.*|.*\..*|.*\s*)\b": ["as it can overwrite important data", "Do not run this if you don't want files to be overwritten."],
+        r"\b(sudo|\_)\s.*(\s*|)(>|>>)(\s*|)(.*\/.*|.*\..*|.*\s*)\b": ["as it can overwrite important data", "Do not run this if you don't want files to be overwritten."],
         r"\\xeb\\x3e\\x5b\\x31\\xc0\\x50\\x54\\x5a": ["as this is part of a very well known malicious code to erase your data", "Do not run this."],  # EXPERIMENTAL
         r"\bcat\s*/dev.*\b": ["as it creates a kernel panic", "We would not suggest running this command."],
-        r"\b\^.*\^.*\b": ["as this might be a substitution", "You most likely won't need a substitution, so we suggest you to ignore this command."],
+        r"^\^.*\^.*\b$": ["as this might be a substitution", "You most likely won't need a substitution, so we suggest you to ignore this command."],
         r"(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}.*(bash|cmd|sh|zsh))|((bash|cmd|sh|zsh).*\d{3}\.\d{3}\.\d{3}\.\d{3})": ["as this could be a reverse shell", "When running this command, someone could potentially connect with your computer."],
-        r"\b-y\b": ["as it automatically executes tasks without double checking for your user input", "It's adviced to run the command without '-y' argument."],
+        r"\s-y\b": ["as it automatically executes tasks without double checking for your user input", "It's adviced to run the command without '-y' argument."],
         #r"\A[^\w\W]": ["", ""],  # Needed when less than two cases
 
     }
@@ -265,12 +282,16 @@ class TestingEnv:
 
     COLOR = 0x57408b
 
-    STATUS = "ECS - TESTING!"
+    STATUS = ["ECS - TESTING!"]
+    MAD_STATUS = ProductionEnv.MAD_STATUS
 
     GUILD = 776898177302921286
 
     DATA_FILES_EMPTY = ProductionEnv.DATA_FILES_EMPTY
     DATA_FILES = ProductionEnv.DATA_FILES
+
+    SAVE_FREQUENCY = ProductionEnv.SAVE_FREQUENCY
+    BACKUP_FREQUENCY = ProductionEnv.BACKUP_FREQUENCY
 
     UNVERIFIEDROLE = 776900475161280514
     VERIFIEDROLE = 776900474552844288
@@ -278,6 +299,9 @@ class TestingEnv:
     MODROLE = 776900459180458015
     DEVROLE = 776900461630324757
     MUTEDROLE = 776900473391022101
+    ROOTROLE = 776900457686892614
+
+    BOTLISTINGROLE = 776900469040611368
 
     ROLES = {b"8J+UlA==": ["ping", 776900472358305833],
              b"4oyo77iP": ["coder", 776900472086331452],
@@ -296,6 +320,7 @@ class TestingEnv:
     WELCOMEMSG_CHANNEL = 776900487886012466
     JOINLEAVE_CHANNEL = 776900514931146792
     MUTECHANNEL = 776900510796087326
+    BUMPCHANNEL = 776900513051967539
 
     VERIFICATIONCHANNELMESSAGE = ProductionEnv.VERIFICATIONCHANNELMESSAGE
 
@@ -329,10 +354,6 @@ class TestingEnv:
     PHELP_DELETE_AFTER_DAY = 4
 
     PHELP_MUTE_ROLE = 796390021526585364
-
-    HELP_MESSAGE_MODS = ProductionEnv.HELP_MESSAGE_MODS
-
-    HELP_MESSAGE_USER = ProductionEnv.HELP_MESSAGE_USER
 
     ISS_INFO_ENABLED = False
 

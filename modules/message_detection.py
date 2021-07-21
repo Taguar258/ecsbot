@@ -6,6 +6,8 @@ from config.config import config
 from discord import Embed
 from discord.ext import commands
 
+# from requests import get as requests_get
+
 
 class MessageDetection(commands.Cog):
     """ Cog for bad command message detection
@@ -23,6 +25,18 @@ class MessageDetection(commands.Cog):
             message.content = self.filter_md(message.content)
 
             await self.detect_dangerous_commands(message)
+
+            # if len(message.attachments) >= 1:  # TODO: Check files too
+
+            #     for attachment in message.attachments:
+
+            #         if attachment.url.endswith(".sh"):
+
+            #             file = requests_get(attachment.url)  # Limit download size
+
+            #             message.content = file[:100]
+
+            #             await self.detect_dangerous_commands(message)
 
     @commands.Cog.listener()
     async def on_message_edit(self, before, after):
