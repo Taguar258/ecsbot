@@ -90,6 +90,7 @@ class Verification(commands.Cog):
 
         # Delete channel
         guild = self.bot.get_guild(config.GUILD)
+
         category = guild.get_channel(config.VERIFICATIONCHANNELCAT)
 
         for channel in category.channels:

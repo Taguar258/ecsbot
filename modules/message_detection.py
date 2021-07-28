@@ -22,7 +22,7 @@ class MessageDetection(commands.Cog):
         """
         if not message.author.bot:
 
-            message.content = self.filter_md(message.content)
+            message.content = self.filter_md(message.content)  # TODO: Consider using clean_content
 
             await self.detect_dangerous_commands(message)
 

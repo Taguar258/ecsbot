@@ -181,13 +181,13 @@ async def send_embed_dm(member, embed):
 
         await member.send(embed=new_embed)
 
-    except (errors.Forbidden, AttributeError, errors.HTTPException):
-
-        pass  # dms disabled
-
     except Exception:
 
         await member.send(embed=embed)
+
+    except (errors.Forbidden, AttributeError, errors.HTTPException):
+
+        pass  # dms disabled
 
 
 # ------ END COMMON SERVER FUNCTIONS ------
@@ -342,6 +342,10 @@ class DataHandler:
             try:
 
                 return_value = await func[0](*func[1][0], **func[1][1])
+
+            except IgnoreException:
+
+                pass
 
             finally:
 

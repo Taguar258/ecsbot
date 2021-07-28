@@ -4,7 +4,7 @@ from os import mkdir, path
 from random import choice
 
 import discord
-from config.config import config
+from config.config import TESTING, config
 from discord.ext import commands
 from discord_slash import SlashCommand
 from modules import IgnoreException, db
@@ -27,12 +27,14 @@ bot_extensions = [
     "modules.moderation",
     "modules.message_detection",
     "modules.vote_mute",
+    "modules.anti_spam",
     "modules.verification",
     "modules.message_log",
     "modules.roles",
     "modules.cleanup",
     "modules.public_help",
     "modules.bump_reminder",
+    "modules.crypto_challenge",
     "modules.iss",
 
 ]
@@ -98,5 +100,20 @@ for extension in bot_extensions:
 
 print("[i] Modules loaded")
 
+# Testing init
+if TESTING:
+
+    import tracemalloc
+
+    tracemalloc.start()
+
 # Run bot
 db.catch(bot, bot.run, config.TOKEN)
+
+# Testing init
+if TESTING:
+
+    current, peak = tracemalloc.get_traced_memory()
+
+    print(f"\033[37mCurrent memory usage:\033[36m {current / 10**6}MB\033[0m")
+    print(f"\033[37mPeak                :\033[36m {peak / 10**6}MB\033[0m")

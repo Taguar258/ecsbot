@@ -47,6 +47,7 @@ class ProductionEnv:
         "punishments": {"punishments": []},
         "reminds": {"reminds": []},
         "public_help": {"current_channels": [], "freeze": False},
+        "crypto_challenge": {"solution-hash": ""},
 
     }
 
@@ -65,6 +66,7 @@ class ProductionEnv:
     DEVROLE = 690212865688469545
     MUTEDROLE = 690254996004012050
     ROOTROLE = 690212500784152591
+    CRYPTOROLE = 867784404243578940
 
     BOTLISTINGROLE = 690260998934102080
 
@@ -72,13 +74,14 @@ class ProductionEnv:
     BANDELETEMESSAGES = 2  # Delete messages of last 2 days
 
     # Custom roles {b64reaction: [rolename, roleid]}
-    ROLES = {  # TODO: Add crypto role
+    ROLES = {
 
         b"8J+UlA==": ["ping", 690239204667818102],
         b"4oyo77iP": ["coder", 690243098533822485],
         b"8J+Suw==": ["hacker", 690243125225980007],
         b"8J+Upw==": ["hardware", 726809084975906856],
         b"8J+Svw==": ["linux", 798178796192006174],
+        b"8J+UkA==": ["crypto", 870061882667573278],
 
     }
 
@@ -165,6 +168,7 @@ If a mod is online but doesn't see your message in #verification, you can ping t
     MEMBERCOUNTCHANNEL = 755757420021809322
     ROLESCHANNEL = 690219084469895225
     BUMPCHANNEL = 690269195690049637
+    CRYPTOANNOUNCMENTCHANNEL = 866331210087006258
 
     # The message for the reaction roles
     ROLESMSG = 724236686971764767
@@ -223,6 +227,8 @@ If a mod is online but doesn't see your message in #verification, you can ping t
 
     REACT_ERROR = "\u2757"    # https://www.fileformat.info/info/unicode/
     REACT_SUCCESS = "\u2705"  #
+    REACT_CONGRATS = u"\U0001F389"  #
+    REACT_FIRST_BLOOD = u"\U0001F631"  #
 
     PHELP_MAX_CHANNELS = 10
     PHELP_MAX_TITLE = 20
@@ -300,6 +306,7 @@ class TestingEnv:
     DEVROLE = 776900461630324757
     MUTEDROLE = 776900473391022101
     ROOTROLE = 776900457686892614
+    CRYPTOROLE = 870029579211898900
 
     BOTLISTINGROLE = 776900469040611368
 
@@ -321,6 +328,7 @@ class TestingEnv:
     JOINLEAVE_CHANNEL = 776900514931146792
     MUTECHANNEL = 776900510796087326
     BUMPCHANNEL = 776900513051967539
+    CRYPTOANNOUNCMENTCHANNEL = 776900499853148201
 
     VERIFICATIONCHANNELMESSAGE = ProductionEnv.VERIFICATIONCHANNELMESSAGE
 
@@ -346,6 +354,8 @@ class TestingEnv:
 
     REACT_ERROR = "\u2757"    # https://www.fileformat.info/info/unicode/
     REACT_SUCCESS = "\u2705"  #
+    REACT_CONGRATS = ProductionEnv.REACT_CONGRATS
+    REACT_FIRST_BLOOD = ProductionEnv.REACT_FIRST_BLOOD
 
     PHELP_MAX_CHANNELS = 10
     PHELP_MAX_TITLE = 20
