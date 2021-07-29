@@ -110,7 +110,7 @@ if TESTING:
 # Run bot
 db.catch(bot, bot.run, config.TOKEN)
 
-# Testing init
+# Testing output
 if TESTING:
 
     current, peak = tracemalloc.get_traced_memory()

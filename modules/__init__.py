@@ -1,12 +1,11 @@
 import json
 import pickle
-from asyncio import coroutine, iscoroutinefunction
 from asyncio import sleep as async_sleep
 from copy import deepcopy
-from functools import wraps
+# from functools import wraps
 from re import finditer, match, sub
 from time import sleep
-from traceback import format_stack, print_exc
+from traceback import print_exc
 
 from config.config import config
 from discord import Embed, errors

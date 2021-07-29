@@ -181,9 +181,16 @@ class Moderation(commands.Cog):
         args = parse_arguments(ctx.message.content)
 
         # Check
-        member = await check_for_id(ctx, args)
+        member = await check_for_id(ctx, args, ignore_errors=True)
 
-        await check_for_role(ctx, member, config.STAFFROLE, "purged")
+        not_in_guild = member is None
+        if not_in_guild:  # TODO: Test
+
+            member = await self.bot.fetch_user(args[0])
+
+        if not not_in_guild:
+
+            await check_for_role(ctx, member, config.STAFFROLE, "purged")
 
         # Main logic
         purging_info = await ctx.send("Purging...")
@@ -728,14 +735,15 @@ class Moderation(commands.Cog):
         """
         args = parse_arguments(ctx.message.content)
 
-        member = await check_for_id(ctx, args)
+        member = await check_for_id(ctx, args, ignore_errors=True)
 
-        if member is None:
+        if member is None:  # TEST
 
             full_name = args[0]
 
         else:
 
+            member = await self.bot.fetch_user(args[0])
             full_name = get_full_name(member)
 
         embed = discord.Embed(
