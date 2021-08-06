@@ -18,41 +18,22 @@ class Debug(commands.Cog):
     async def on_ready(self):
         """ Change presence and print status
         """
-        self.rotate_status_tick.start()
         self.change_status_tick.start()
 
         await self.member_counter()
 
         print(f"[i] Bot is ready, {self.bot.user.name}")
 
-    @tasks.loop(minutes=5)
-    async def change_status_tick(self):  # Rotate after 1 day automatically
-        """ Change status back if changed.
-            Used for dynmaic mood status.
+    @tasks.loop(minutes=30)
+    async def change_status_tick(self):
+        """ Change status back dynamically
         """
-        if self.bot.activity is None or \
-           self.bot.activity.name not in config.STATUS:
+        await self.bot.change_presence(
 
-            await self.bot.change_presence(
+            status=discord.Status.online,
+            activity=discord.Activity(name=choice(config.STATUS), type=discord.ActivityType.competing)
 
-                status=discord.Status.online,
-                activity=discord.Activity(name=choice(config.STATUS), type=discord.ActivityType.competing)
-
-            )
-
-    @tasks.loop(hours=24)
-    async def rotate_status_tick(self):
-        """ Rotate status back if not changed.
-        """
-        if self.bot.activity is not None and \
-           self.bot.activity.name in config.STATUS:
-
-            await self.bot.change_presence(
-
-                status=discord.Status.online,
-                activity=discord.Activity(name=choice(config.STATUS), type=discord.ActivityType.competing)
-
-            )
+        )
 
     async def member_counter(self):
         """ Update voice channel member counter

@@ -29,7 +29,7 @@ class CryptoChallenge(commands.Cog):
             solution = db["crypto_challenge"]["solution-hash"]
 
             if solution != "" and \
-               solution in message.content:
+               solution in "".join(message.content.split()):  # TODO: TEST
 
                 await message.channel.send(f"Crypto solution (posted by {message.author.mention}) has been eradicated!")
 
@@ -45,8 +45,11 @@ class CryptoChallenge(commands.Cog):
 
         solution = db["crypto_challenge"]["solution-hash"]
 
-        if solution != "" and \
-           message.content == solution:
+        if solution == "":
+
+            pass  # Ignore when no solution hash set
+
+        elif message.content == solution:
 
             congrats_msg = await message.channel.send("Congratulations, you have successfully solved the crypto challenge.")
             await congrats_msg.add_reaction(config.REACT_CONGRATS)

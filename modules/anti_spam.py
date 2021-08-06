@@ -61,7 +61,82 @@ class AntiSpam(commands.Cog):
         """
         self._last_messages = []
 
-    @db.flock
+    async def _mute_spam(self, author_id):
+        """ Seperated function from self._check_spam to reduce flock queue time
+        """
+        # Mute user
+        channel_id = [message["Channel_ID"] for message in self._last_messages if message["User_ID"] == author_id][-1]
+
+        # Flush data
+        self._flush_data()
+
+        guild = self.bot.get_guild(config.GUILD)
+        log_channel = self.bot.get_channel(config.LOGCHANNEL)
+        mute_channel = self.bot.get_channel(config.MUTE_CHANNEL)
+        muted_role = guild.get_role(config.MUTEDROLE)
+        author = await guild.fetch_member(author_id)
+        channel = self.bot.get_channel(channel_id)
+
+        await author.add_roles(muted_role)
+        await channel.send(f"The member <@{author.id}> has been spam-muted.")
+        await mute_channel.send(f"Sorry <@{author.id}>, you have been muted due to possible spamming.\nPlease wait for an <@&690212787087081554>, to discuss the issue, and get unmuted.\nWe are so sorry in case this is a false detection.")
+
+        punishments = db["punishments"]["punishments"]
+
+        # Check if muted
+        muted = False
+
+        for punishment in punishments:
+
+            if punishment["userid"] == author.id and \
+               punishment["type"] == "mute":
+
+                muted = True
+
+        if muted:
+
+            await channel.send(f"The member {author.mention} is already muted.")
+
+            return
+
+        # Write punishment data
+        endtime = datetime.utcnow() + timedelta(minutes=999999999)
+
+        punishments.append(
+
+            {
+
+                "year": endtime.year,
+                "month": endtime.month,
+                "day": endtime.day,
+                "hour": endtime.hour,
+                "minute": endtime.minute,
+                "userid": author.id,
+                "guild": guild.id,
+                "type": "mute",
+
+            }
+
+        )
+
+        db["punishments"] = {"punishments": punishments}
+
+        # Send log
+        date = datetime.now().strftime("%d.%m.%Y")
+
+        embed = Embed(
+
+            description=f"{author.mention} has been vote muted.",
+            color=config.COLOR,
+
+        )
+
+        embed.set_author(name=f"{author.name}#{author.discriminator}", icon_url=author.avatar_url)
+
+        embed.set_footer(text=f"ID: {author.id} • {date}")
+
+        await log_channel.send(embed=embed)
+
     async def _check_spam(self):
         """ Detect possible spam
 
@@ -131,78 +206,7 @@ class AntiSpam(commands.Cog):
 
             if score / 5 >= 0.6:  # Average of tests (SCORE PERCENTAGE)
 
-                # Mute user
-                channel_id = [message["Channel_ID"] for message in self._last_messages if message["User_ID"] == author_id][-1]
-
-                # Flush data
-                self._flush_data()
-
-                guild = self.bot.get_guild(config.GUILD)
-                log_channel = self.bot.get_channel(config.LOGCHANNEL)
-                mute_channel = self.bot.get_channel(config.MUTE_CHANNEL)
-                muted_role = guild.get_role(config.MUTEDROLE)
-                author = await guild.fetch_member(author_id)
-                channel = self.bot.get_channel(channel_id)
-
-                await author.add_roles(muted_role)
-                await channel.send(f"The member <@{author.id}> has been spam-muted.")
-                await mute_channel.send(f"Sorry <@{author.id}>, you have been muted due to possible spamming.\nPlease wait for an <@&690212787087081554>, to discuss the issue, and get unmuted.\nWe are so sorry in case this is a false detection.")
-
-                punishments = db["punishments"]["punishments"]
-
-                # Check if muted
-                muted = False
-
-                for punishment in punishments:
-
-                    if punishment["userid"] == author.id and \
-                       punishment["type"] == "mute":
-
-                        muted = True
-
-                if muted:
-
-                    await channel.send(f"The member {author.mention} is already muted.")
-
-                    return
-
-                # Write punishment data
-                endtime = datetime.utcnow() + timedelta(minutes=999999999)
-
-                punishments.append(
-
-                    {
-
-                        "year": endtime.year,
-                        "month": endtime.month,
-                        "day": endtime.day,
-                        "hour": endtime.hour,
-                        "minute": endtime.minute,
-                        "userid": author.id,
-                        "guild": guild.id,
-                        "type": "mute",
-
-                    }
-
-                )
-
-                db["punishments"] = {"punishments": punishments}
-
-                # Send log
-                date = datetime.now().strftime("%d.%m.%Y")
-
-                embed = Embed(
-
-                    description=f"{author.mention} has been vote muted.",
-                    color=config.COLOR,
-
-                )
-
-                embed.set_author(name=f"{author.name}#{author.discriminator}", icon_url=author.avatar_url)
-
-                embed.set_footer(text=f"ID: {author.id} • {date}")
-
-                await log_channel.send(embed=embed)
+                await self._mute_spam(author_id)
 
     async def _check_dupe(self):
         """ Detect possible dupes

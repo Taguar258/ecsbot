@@ -184,7 +184,7 @@ class Moderation(commands.Cog):
         member = await check_for_id(ctx, args, ignore_errors=True)
 
         not_in_guild = member is None
-        if not_in_guild:  # TODO: Test
+        if not_in_guild:
 
             member = await self.bot.fetch_user(args[0])
 

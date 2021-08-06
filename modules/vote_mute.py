@@ -40,6 +40,106 @@ class VoteMute(commands.Cog):
             await self.check_vote_reaction(self.bot, channel, message)
 
     @db.flock
+    async def _mute_voted_user(self, client, message, pro_count, contra_count):
+        """ Seperate mute actions from self.check_vote_reaction to decrease queue time
+        """
+        # Init
+        log_channel = self.bot.get_channel(config.LOGCHANNEL)
+
+        await message.author.add_roles(message.guild.get_role(config.MUTEDROLE))
+
+        await message.channel.send(f"The member <@{message.author.id}> has been vote-muted.")
+
+        mute_channel = client.get_channel(config.MUTE_CHANNEL)
+
+        await mute_channel.send(f"Sorry <@{message.author.id}>, you have been muted due to possible rule-breaking.\nPlease wait for an <@&690212787087081554>, to discuss the issue, and get unmuted.")
+        await mute_channel.send(f"[{pro_count}/{contra_count}]\n||{message.content}||")
+
+        await message.delete()
+
+        # Write punishment data
+        punishments = db["punishments"]["punishments"]
+
+        # Check if muted
+        muted = False
+
+        for punishment in punishments:
+
+            if punishment["userid"] == message.author.id and \
+               punishment["type"] == "mute":
+
+                muted = True
+
+        if muted:
+
+            await message.channel.send(f"The member {message.author.mention} is already muted.")
+
+            return
+
+        # Write punishment data
+        endtime = datetime.utcnow() + timedelta(minutes=999999999)
+
+        punishments.append(
+
+            {
+
+                "year": endtime.year,
+                "month": endtime.month,
+                "day": endtime.day,
+                "hour": endtime.hour,
+                "minute": endtime.minute,
+                "userid": message.author.id,
+                "guild": message.guild.id,
+                "type": "mute",
+
+            }
+
+        )
+
+        db["punishments"] = {"punishments": punishments}
+
+        # Write log
+        now = datetime.utcnow()
+
+        logs = db["logs"]["logs"]
+
+        logs.append(
+
+            {
+
+                "year": now.year,
+                "month": now.month,
+                "day": now.day,
+                "hour": now.hour,
+                "minute": now.minute,
+                "userid": message.author.id,
+                "guild": message.guild.id,
+                "duration": 999999999,
+                "reason": f"Vote Mute ({message.content[:50]})",
+                "type": "mute",
+
+            }
+
+        )
+
+        db["logs"] = {"logs": logs}
+
+        # Send log
+        date = datetime.now().strftime("%d.%m.%Y")
+
+        embed = Embed(
+
+            description=f"{message.author.mention} has been vote muted.",
+            color=config.COLOR,
+
+        )
+
+        embed.set_author(name=f"{message.author.name}#{message.author.discriminator}", icon_url=message.author.avatar_url)
+
+        embed.set_footer(text=f"ID: {message.author.id} • {date}")
+
+        await log_channel.send(embed=embed)
+
     async def check_vote_reaction(self, client, channel, message):
         """ Check for mute reactions
 
@@ -92,102 +192,7 @@ class VoteMute(commands.Cog):
             contra_moderators_count != 0) or \
            (pro_moderators_count >= 1):
 
-            # Init
-            log_channel = self.bot.get_channel(config.LOGCHANNEL)
-
-            await message.author.add_roles(message.guild.get_role(config.MUTEDROLE))
-
-            await message.channel.send(f"The member <@{message.author.id}> has been vote-muted.")
-
-            mute_channel = client.get_channel(config.MUTE_CHANNEL)
-
-            await mute_channel.send(f"Sorry <@{message.author.id}>, you have been muted due to possible rule-breaking.\nPlease wait for an <@&690212787087081554>, to discuss the issue, and get unmuted.")
-            await mute_channel.send(f"[{pro_count}/{contra_count}]\n||{message.content}||")
-
-            await message.delete()
-
-            # Write punishment data
-            punishments = db["punishments"]["punishments"]
-
-            # Check if muted
-            muted = False
-
-            for punishment in punishments:
-
-                if punishment["userid"] == message.author.id and \
-                   punishment["type"] == "mute":
-
-                    muted = True
-
-            if muted:
-
-                await message.channel.send(f"The member {message.author.mention} is already muted.")
-
-                return
-
-            # Write punishment data
-            endtime = datetime.utcnow() + timedelta(minutes=999999999)
-
-            punishments.append(
-
-                {
-
-                    "year": endtime.year,
-                    "month": endtime.month,
-                    "day": endtime.day,
-                    "hour": endtime.hour,
-                    "minute": endtime.minute,
-                    "userid": message.author.id,
-                    "guild": message.guild.id,
-                    "type": "mute",
-
-                }
-
-            )
-
-            db["punishments"] = {"punishments": punishments}
-
-            # Write log
-            now = datetime.utcnow()
-
-            logs = db["logs"]["logs"]
-
-            logs.append(
-
-                {
-
-                    "year": now.year,
-                    "month": now.month,
-                    "day": now.day,
-                    "hour": now.hour,
-                    "minute": now.minute,
-                    "userid": message.author.id,
-                    "guild": message.guild.id,
-                    "duration": 999999999,
-                    "reason": f"Vote Mute ({message.content[:50]})",
-                    "type": "mute",
-
-                }
-
-            )
-
-            db["logs"] = {"logs": logs}
-
-            # Send log
-            date = datetime.now().strftime("%d.%m.%Y")
-
-            embed = Embed(
-
-                description=f"{message.author.mention} has been vote muted.",
-                color=config.COLOR,
-
-            )
-
-            embed.set_author(name=f"{message.author.name}#{message.author.discriminator}", icon_url=message.author.avatar_url)
-
-            embed.set_footer(text=f"ID: {message.author.id} • {date}")
-
-            await log_channel.send(embed=embed)
+            await self._mute_voted_user(client, message, pro_count, contra_count)
 
 
 def setup(bot):
