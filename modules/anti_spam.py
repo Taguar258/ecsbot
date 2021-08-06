@@ -61,6 +61,7 @@ class AntiSpam(commands.Cog):
         """
         self._last_messages = []
 
+    @db.flock
     async def _mute_spam(self, author_id):
         """ Seperated function from self._check_spam to reduce flock queue time
         """
