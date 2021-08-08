@@ -5,7 +5,7 @@ All functions can be found under `modules/` .
 
 ## ECS (Ethical Computing Society)
 
-Our Discord server provides help with topics such as coding, ethical hacking, Linux, and hardware.
+Our Discord server provides help with topics such as coding, ethical hacking, Linux, cryptography, and hardware.
 
 What makes our server different?
 
