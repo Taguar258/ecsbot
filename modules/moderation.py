@@ -1,4 +1,5 @@
 from asyncio import sleep as async_sleep
+from copy import deepcopy
 from datetime import datetime, timedelta
 
 import discord
@@ -206,7 +207,7 @@ class Moderation(commands.Cog):
         await purging_info.edit(content=f"Successfully purged {member.mention}, rerun if not all messages were affected.")
 
     @commands.command(pass_context=True)
-    @commands.has_role(config.MODROLE)
+    @commands.has_role([config.TRIALMODROLE, config.MODROLE])
     @db.flock
     async def mute(self, ctx):
         """ Mute user for certain amount of time
@@ -258,7 +259,7 @@ class Moderation(commands.Cog):
         # Main logic
         reason = " ".join(args[2:])
 
-        embed = config.MUTEMSG
+        embed = deepcopy(config.MUTEMSG)
 
         embed.add_field(
 
@@ -394,7 +395,7 @@ class Moderation(commands.Cog):
         # Main logic
         reason = " ".join(args[2:])
 
-        embed = config.BANMSG
+        embed = deepcopy(config.BANMSG)
 
         embed.add_field(
 
@@ -475,7 +476,7 @@ class Moderation(commands.Cog):
         await ctx.message.channel.send(f"Successfully banned {member.mention}!")
 
     @commands.command(pass_context=True)
-    @commands.has_role(config.MODROLE)
+    @commands.has_role([config.TRIALMODROLE, config.MODROLE])
     @db.flock
     async def unmute(self, ctx):
         """ Unmute muted member
@@ -607,7 +608,7 @@ class Moderation(commands.Cog):
         await ctx.message.channel.send(f"Successfully unbanned {user.mention}!")
 
     @commands.command(pass_context=True)
-    @commands.has_role(config.MODROLE)
+    @commands.has_role([config.TRIALMODROLE, config.MODROLE])
     @db.flock
     async def kick(self, ctx):
         """ Kick a member
@@ -653,7 +654,7 @@ class Moderation(commands.Cog):
 
         db["logs"] = {"logs": logs}
 
-        embed = config.KICKMSG
+        embed = deepcopy(config.KICKMSG)
 
         embed.add_field(
 
@@ -671,7 +672,7 @@ class Moderation(commands.Cog):
         await ctx.message.channel.send(f"Successfully kicked {member.mention}!")
 
     @commands.command(pass_context=True)
-    @commands.has_role(config.MODROLE)
+    @commands.has_role([config.TRIALMODROLE, config.MODROLE])
     @db.flock
     async def warn(self, ctx):
         """ Warn a member
@@ -713,7 +714,7 @@ class Moderation(commands.Cog):
 
         db["logs"] = {"logs": logs}
 
-        embed = config.WARNMSG
+        embed = deepcopy(config.WARNMSG)
 
         embed.add_field(
 

@@ -2,6 +2,8 @@ import json
 import pickle
 from asyncio import sleep as async_sleep
 from copy import deepcopy
+from json import dump
+from os import mkdir, path
 # from functools import wraps
 from re import finditer, match, sub
 from time import sleep
@@ -203,6 +205,9 @@ class DataHandler:
     """
     def __init__(self):
 
+        # Init checks
+        self._create_data_structure()
+
         # (Static) Variables
         self._data_files = config.DATA_FILES
         self._warning_threshold = 8  # On len(self._queue) warn user
@@ -231,6 +236,27 @@ class DataHandler:
 
         self.data[data_name] = new_data
         self._edited_data[data_name] = 1
+
+    # Init data
+    def __write_empty_data_entry(self, data_name, json_columns):
+        """ Write empty json data set
+        """
+        with open(f"data/{data_name}.json", "w") as json_file:
+
+            dump(json_columns, json_file)
+
+    def _create_data_structure(self):
+        """ Write and repair data structure if not existing
+        """
+        if not path.isdir("data"):
+
+            mkdir("data")
+
+        for json_file, json_columns in config.DATA_FILES_EMPTY.items():
+
+            if not path.isfile(f"data/{json_file}.json"):
+
+                self.__write_empty_data_entry(json_file, json_columns)
 
     # Checking functions
     def __check_data_exist(self, data_name):

@@ -26,8 +26,7 @@ class AntiSpam(commands.Cog):
         """
         # Check for bot
         if isinstance(message.channel, discord.channel.DMChannel) or \
-           message.author.bot or \
-           config.STAFFROLE in [role.id for role in message.author.roles]:
+           message.author.bot:
 
             return
 
@@ -46,7 +45,8 @@ class AntiSpam(commands.Cog):
         )
 
         # CHECK DATA
-        if len(self._last_messages) >= 5:
+        if config.STAFFROLE in [role.id for role in message.author.roles] and \
+           len(self._last_messages) >= 5:
 
             await self._check_spam()
             await self._check_dupe()
@@ -127,7 +127,7 @@ class AntiSpam(commands.Cog):
 
         embed = Embed(
 
-            description=f"{author.mention} has been vote muted.",
+            description=f"{author.mention} has been spam-muted.",
             color=config.COLOR,
 
         )

@@ -1,6 +1,4 @@
 #!/usr/bin/python3
-from json import dump
-from os import mkdir, path
 from random import choice
 
 import discord
@@ -32,34 +30,12 @@ bot_extensions = [
     "modules.message_log",
     "modules.roles",
     "modules.cleanup",
-    "modules.public_help",
+    # "modules.public_help",
     "modules.bump_reminder",
     "modules.crypto_challenge",
     "modules.iss",
 
 ]
-
-
-def write_empty(data_name, json_columns):
-    """ Write empty json data set
-    """
-    with open(f"data/{data_name}.json", "w") as json_file:
-
-        dump(json_columns, json_file)
-
-
-# Common events
-@bot.event
-async def on_ready():
-    """ Write data if not existing
-    """
-    if not path.isdir("data"):
-
-        mkdir("data")
-
-        for json_file, json_columns in config.DATA_FILES_EMPTY.items():
-
-            write_empty(json_file, json_columns)
 
 
 @bot.event

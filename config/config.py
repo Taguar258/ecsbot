@@ -20,12 +20,12 @@ class ProductionEnv:
         "Busy Researching Humans On Ethical Computing Society...",
         "Ethical Computing Society!",
         "Happy :)",
-        "Watching you eating pizza through your webcam",  # Author: Apolycious
+        "Watching you eat pizza through your webcam",  # Author: Apolycious
         "The cake is a lie!",
         "Accessing the mainframe...",  # ° °
         "LcWxCcAwDATAATXVIz6W6qA3aS0CXiVbuUl1eaG2imSuIVWOVqk7ndHoL/CS0oy90h03MCcfEOXsYJnZzwE=",
         "Your message could be displayed here (DM Taguar).",
-        "Buy now: Fart away spray!",
+        "E404: Message could not be displayed",
 
     ]
 
@@ -63,6 +63,7 @@ class ProductionEnv:
     # Roles for the Verification-Mechanism and others
     STAFFROLE = 724251714613411851
     MODROLE = 690212787087081554
+    TRIALMODROLE = 690232623167045703
     DEVROLE = 690212865688469545
     MUTEDROLE = 690254996004012050
     ROOTROLE = 690212500784152591
@@ -303,6 +304,7 @@ class TestingEnv:
     VERIFIEDROLE = 776900474552844288
     STAFFROLE = 776900462753480714
     MODROLE = 776900459180458015
+    TRIALMODROLE = 776900460606259230
     DEVROLE = 776900461630324757
     MUTEDROLE = 776900473391022101
     ROOTROLE = 776900457686892614
