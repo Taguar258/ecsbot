@@ -30,10 +30,10 @@ bot_extensions = [
     "modules.message_log",
     "modules.roles",
     "modules.cleanup",
-    # "modules.public_help",
     "modules.bump_reminder",
     "modules.crypto_challenge",
     "modules.iss",
+    # "modules.public_help",
 
 ]
 
@@ -42,16 +42,21 @@ bot_extensions = [
 async def on_command_error(ctx, error):
     """ Error handeling
     """
-    if isinstance(error, commands.MissingRole):
+    if isinstance(error, commands.MissingRole) or \
+       isinstance(error, commands.MissingAnyRole):
 
         await ctx.message.channel.send("You do not have permission to run this command.")
 
     elif isinstance(error, commands.CommandNotFound):
 
-        pass
+        pass  # Ignore
 
     elif hasattr(error, "original") and \
             isinstance(error.original, IgnoreException):
+
+        pass  # Ignore
+
+    elif isinstance(error, commands.errors.NoPrivateMessage):
 
         pass  # Ignore
 

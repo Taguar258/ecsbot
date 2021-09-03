@@ -4,7 +4,7 @@ from itertools import combinations
 
 import discord
 from config.config import config
-from discord import Embed
+from discord import Embed, errors
 from discord.ext import commands
 from modules import db
 
@@ -35,7 +35,7 @@ class AntiSpam(commands.Cog):
             {
 
                 "User_ID": message.author.id,
-                # "Message_ID": message.id,
+                "Message_ID": message.id,
                 "Channel_ID": message.channel.id,
                 "Created_At": message.created_at,
                 "Message_Content": message.clean_content,
@@ -45,7 +45,7 @@ class AntiSpam(commands.Cog):
         )
 
         # CHECK DATA
-        if config.STAFFROLE in [role.id for role in message.author.roles] and \
+        if config.STAFFROLE not in [role.id for role in message.author.roles] and \
            len(self._last_messages) >= 5:
 
             await self._check_spam()
@@ -241,7 +241,24 @@ class AntiSpam(commands.Cog):
             # Check channel IDs
             for match1, match2 in similar:
 
-                if match1["Channel_ID"] != match2["Channel_ID"]:
+                match1_channel = await self.bot.fetch_channel(match1["Channel_ID"])
+                match2_channel = await self.bot.fetch_channel(match2["Channel_ID"])
+
+                try:  # TODO: Improvement needed
+
+                    match1_message = await match1_channel.fetch_message(match1["Message_ID"])
+                    match2_message = await match2_channel.fetch_message(match2["Message_ID"])
+
+                except (errors.Forbidden, errors.NotFound):
+
+                    match1_message = None
+                    match2_message = None
+
+                match1_verify = match1_message is not None
+                match2_verify = match2_message is not None
+
+                if match1["Channel_ID"] != match2["Channel_ID"] and \
+                   match1_verify and match2_verify:
 
                     test_result[author_id] = 1
 

@@ -20,7 +20,8 @@ class MessageDetection(commands.Cog):
     async def on_message(self, message):
         """ On message sent
         """
-        if not message.author.bot:
+        if not message.author.bot and \
+           config.HELPERROLE not in [role.id for role in message.author.roles]:
 
             message.content = self.filter_md(message.content)  # TODO: Consider using clean_content
 

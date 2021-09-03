@@ -55,7 +55,7 @@ class ProductionEnv:
 
     # DATA STORING
     SAVE_FREQUENCY = 300  # seconds
-    BACKUP_FREQUENCY = 600  # seconds
+    BACKUP_FREQUENCY = 3600  # seconds
 
     # ID of the Guild.
     GUILD = 690212435306741901
@@ -68,6 +68,7 @@ class ProductionEnv:
     MUTEDROLE = 690254996004012050
     ROOTROLE = 690212500784152591
     CRYPTOROLE = 867784404243578940
+    HELPERROLE = 690212809648242693
 
     BOTLISTINGROLE = 690260998934102080
 
@@ -248,7 +249,7 @@ If a mod is online but doesn't see your message in #verification, you can ping t
         r"\b(rm|shred|rmdir)\b": ["as it deletes files and/or folders", "Make sure to create a backup before runing this command and look out for the star '*' char, as it patter matches everything."],
         r"\b(chown|chmod)\s*-R\.*\b": ["as it removes all permission to a file or directory", "We would not suggest running this command."],
         r":(){ :\|: & };:": ["as it is a for bomb and will freeze your computer", "We do not recommend running the command."],
-        r"(\bdd\b|\bof=/\b)": ["as it could overwrite important data", "We do not recommend running this, if you do not understand what the command does."],
+        r"\bdd.*of=.*": ["as it could overwrite important data", "We do not recommend running this, if you do not understand what the command does."],
         r"\bgparted\b": ["as it could format important data", "We do not recommend using this, if you do not want to mess with your data."],
         r"\bparted\b": ["as it could format important data", "We do not recommend using this, if you do not want to mess with your data."],
         r"\bmkfs.*": ["as it could format important data", "We do not recommend using this, if you do not want to mess with your data."],
@@ -260,7 +261,8 @@ If a mod is online but doesn't see your message in #verification, you can ping t
         r"\bcat\s*/dev.*\b": ["as it creates a kernel panic", "We would not suggest running this command."],
         r"^\^.*\^.*\b$": ["as this might be a substitution", "You most likely won't need a substitution, so we suggest you to ignore this command."],
         r"(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}.*(bash|cmd|sh|zsh))|((bash|cmd|sh|zsh).*\d{3}\.\d{3}\.\d{3}\.\d{3})": ["as this could be a reverse shell", "When running this command, someone could potentially connect with your computer."],
-        r"\s-y\b": ["as it automatically executes tasks without double checking for your user input", "It's adviced to run the command without '-y' argument."],
+        r"\s*-y\b": ["as it automatically executes tasks without double checking for your user input", "It's adviced to run the command without '-y' argument."],
+        r">\s*/proc": ["as it can harm your operating system or cause kernel panics", "It's adviced to not run this command."]
         #r"\A[^\w\W]": ["", ""],  # Needed when less than two cases
 
     }
@@ -309,6 +311,7 @@ class TestingEnv:
     MUTEDROLE = 776900473391022101
     ROOTROLE = 776900457686892614
     CRYPTOROLE = 870029579211898900
+    HELPERROLE = 776900466528616448
 
     BOTLISTINGROLE = 776900469040611368
 

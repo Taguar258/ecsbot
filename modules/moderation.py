@@ -207,7 +207,7 @@ class Moderation(commands.Cog):
         await purging_info.edit(content=f"Successfully purged {member.mention}, rerun if not all messages were affected.")
 
     @commands.command(pass_context=True)
-    @commands.has_role([config.TRIALMODROLE, config.MODROLE])
+    @commands.has_any_role(config.TRIALMODROLE, config.MODROLE)
     @db.flock
     async def mute(self, ctx):
         """ Mute user for certain amount of time
@@ -476,7 +476,7 @@ class Moderation(commands.Cog):
         await ctx.message.channel.send(f"Successfully banned {member.mention}!")
 
     @commands.command(pass_context=True)
-    @commands.has_role([config.TRIALMODROLE, config.MODROLE])
+    @commands.has_any_role(config.TRIALMODROLE, config.MODROLE)
     @db.flock
     async def unmute(self, ctx):
         """ Unmute muted member
@@ -608,7 +608,7 @@ class Moderation(commands.Cog):
         await ctx.message.channel.send(f"Successfully unbanned {user.mention}!")
 
     @commands.command(pass_context=True)
-    @commands.has_role([config.TRIALMODROLE, config.MODROLE])
+    @commands.has_any_role(config.TRIALMODROLE, config.MODROLE)
     @db.flock
     async def kick(self, ctx):
         """ Kick a member
@@ -672,7 +672,7 @@ class Moderation(commands.Cog):
         await ctx.message.channel.send(f"Successfully kicked {member.mention}!")
 
     @commands.command(pass_context=True)
-    @commands.has_role([config.TRIALMODROLE, config.MODROLE])
+    @commands.has_any_role(config.TRIALMODROLE, config.MODROLE)
     @db.flock
     async def warn(self, ctx):
         """ Warn a member

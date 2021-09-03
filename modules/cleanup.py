@@ -23,8 +23,6 @@ class Cleanup(commands.Cog):
 
         if ctx.message.channel.id == channel.id:  # Temporary message if send in mute channel
 
-            await ctx.message.delete()
-
             await info_msg.add_reaction(config.REACT_SUCCESS)
 
             await async_sleep(6)
