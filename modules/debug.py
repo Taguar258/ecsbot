@@ -4,7 +4,7 @@ import discord
 from config.config import config
 from discord.ext import commands, tasks
 from discord_slash import SlashContext, cog_ext
-from modules import db, get_full_name
+from modules import get_full_name
 
 
 class Debug(commands.Cog):

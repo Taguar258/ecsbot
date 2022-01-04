@@ -142,6 +142,7 @@ class AntiSpam(commands.Cog):
         """ Detect possible spam
 
         Could be improved
+         - TODO: Spamming innocent people? (https://discord.com/channels/690212435306741901/883363741654188133/883437674399154186)
 
         """
         test_result = {message["User_ID"]: 0 for message in self._last_messages}

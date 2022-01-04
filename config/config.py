@@ -173,7 +173,7 @@ If a mod is online but doesn't see your message in #verification, you can ping t
     CRYPTOANNOUNCMENTCHANNEL = 866331210087006258
 
     # The message for the reaction roles
-    ROLESMSG = 724236686971764767
+    ROLESMSG = 870466038624583681
 
     # Discord Embeds for Reminders and various other warnings.
     UNMUTEMSG = Embed(
