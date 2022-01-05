@@ -71,6 +71,10 @@ class MessageLog(commands.Cog):
 
                 embed.add_field(name=f"Content[{pos}]", value=content, inline=False)
 
+            for pos, attachment in enumerate(message.attachments):
+
+                embed.add_field(name=f"Attachment[{pos}]", value=attachment.url, inline=False)
+
             embed.set_author(name=full_name, icon_url=message.author.avatar_url)
 
             embed.set_footer(text=footer)
