@@ -182,13 +182,14 @@ async def send_embed_dm(member, embed):
 
         await member.send(embed=new_embed)
 
+    except (errors.Forbidden, AttributeError, errors.HTTPException):
+
+        pass  # dms disabled
+    
     except Exception:
 
         await member.send(embed=embed)
 
-    except (errors.Forbidden, AttributeError, errors.HTTPException):
-
-        pass  # dms disabled
 
 
 # ------ END COMMON SERVER FUNCTIONS ------
