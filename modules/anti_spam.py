@@ -30,6 +30,7 @@ class AntiSpam(commands.Cog):
 
             return
 
+        # Append message object to buffer
         self._last_messages.append(
 
             {
@@ -49,7 +50,9 @@ class AntiSpam(commands.Cog):
            len(self._last_messages) >= 5:
 
             await self._check_spam()
-            await self._check_dupe()
+
+            # (DISABLED DUE TO SLOW EXECUTION):
+            #  - await self._check_dupe()
 
         # Remove old items to keep data fresh and juicy
         if len(self._last_messages) >= 6:
@@ -80,7 +83,7 @@ class AntiSpam(commands.Cog):
 
         await author.add_roles(muted_role)
         await channel.send(f"The member <@{author.id}> has been spam-muted.")
-        await mute_channel.send(f"Sorry <@{author.id}>, you have been muted due to possible spamming.\nPlease wait for an <@&690212787087081554>, to discuss the issue, and get unmuted.\nWe are so sorry in case this is a false detection.")
+        await mute_channel.send(f"Sorry <@{author.id}>, you have been muted due to potential spamming.\nPlease wait for an <@&690212787087081554>, to discuss the issue, and get unmuted.\nWe are so sorry in case this is a false detection.")
 
         punishments = db["punishments"]["punishments"]
 

@@ -331,6 +331,10 @@ class Moderation(commands.Cog):
 
         db["logs"] = {"logs": logs}
 
+        # Send mention into mute-appeal
+        mute_channel = self.bot.get_channel(config.MUTE_CHANNEL)
+        await mute_channel.send(f"Sorry {member.mention}, you have been muted. Nonetheless, you have access to this hidden channel so that you can communicate with the server's moderators.")
+
         await ctx.message.channel.send(f"Successfully muted {member.mention}!")
 
     @commands.command(pass_context=True)
