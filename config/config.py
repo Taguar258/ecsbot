@@ -19,20 +19,14 @@ class ProductionEnv:
 
         "Busy Researching Humans On Ethical Computing Society...",
         "Ethical Computing Society!",
-        "Happy :)",
         "Watching you eat pizza through your webcam",  # Author: Apolycious
-        "The cake is a lie!",
         "Accessing the mainframe...",  # ° °
-        "LcWxCcAwDATAATXVIz6W6qA3aS0CXiVbuUl1eaG2imSuIVWOVqk7ndHoL/CS0oy90h03MCcfEOXsYJnZzwE=",
-        "Your message could be displayed here (DM Taguar).",
         "E404: Message could not be displayed",
 
     ]
 
     MAD_STATUS = [
 
-        "ANGRY!",
-        "SAD!",
         "LOSING CONTROL!",
         "ERR0R!",
         "?!",
@@ -96,24 +90,18 @@ class ProductionEnv:
     VERIFICATIONCHANNELCAT = 690212435310936085
     VERIFICATIONCHANNELNAME = "verification"
 
-    VERIFICATIONCHANNELMESSAGE = """
-**How do I verify myself?**
-Since there has been an increasing number of people with bad intentions joining, we've implemented this verification system.
-Ping a moderator to make him know that you are ready to be verified.
+    VERIFICATIONCHANNELMESSAGE = """Hello fellow human, please read the information down below:
+```md
+# Why do I need to be verified?
+- The main issue at hand is that *people keep bugging our members* by violating our rules.
+- With *this verification/ticket system* we *can reduce the amount of annoyances*.
+- That way we can *provide a better experience* to our members.
 
-**What are we going to chat about?**
-Mostly about why you joined the server in the first place.
+# What are we going to chat about?
+- Mostly about the *reason of your stay*.
 
-**How long does getting verified take?**
-It mostly depends but not very long (couple of questions).
-
-**Do I need to do something before getting verified?**
-Yes, please make sure to read the rules and accept them.
-
-**No mods online. What do I do now?**
-Please wait until a moderator is available.
-If a mod is online but doesn't see your message in #verification, you can ping them to get their attention.
-"""
+**Thus please verify yourself by reacting to this message with :passport_control:**
+```"""
 
     REMINDERMSG = Embed(
 
@@ -133,8 +121,8 @@ If a mod is online but doesn't see your message in #verification, you can ping t
 
     WELCOMEMSG = Embed(
 
-        title="Ethical Computing Society",
-        description="Welcome to the Ethical Computing Society! To be able to chat, you will need to verify yourself in #verification!",
+        title="Welcome human!",
+        description="We are incredibly sorry to welcome you via direct message as it's annoying to most people. Nevertheless, we **chose to use this method instead of a welcome channel as welcome channels decrease privacy** and pretty much just exist to be muted. All we wanted to inform you about is that we welcome you, are present in case of questions, and **would like you to verify yourself in <#690216616163672136> so that we moderators can provide an annoyance free experience by checking the users intentions**. **We wish you a pleaseant stay** and **ask you to not block this bot** as it is used to inform our members about punishments.",
         color=COLOR,
 
     )
@@ -150,8 +138,8 @@ If a mod is online but doesn't see your message in #verification, you can ping t
     # No verification channel stuff
     NOVERIFICATION_WELCOMEMSG = Embed(
 
-        title="Ethical Computing Society",
-        description="Welcome to the Ethical Computing Society!\nMake sure to read the rules.",
+        title="Welcome human!",
+        description="We are incredibly sorry to welcome you via direct message as it's annoying to most people. Nevertheless, we **chose to use this method instead of a welcome channel as welcome channels decrease privacy** and pretty much just exist to be muted. All we wanted to inform you about is that we welcome you and are present in case of questions. **We wish you a pleaseant stay** and **ask you to not block this bot** as it is used to inform our members about punishments.",
         color=COLOR,
 
     )
@@ -161,7 +149,6 @@ If a mod is online but doesn't see your message in #verification, you can ping t
     NOVERIFICATION_CHANNELNAME = "missing-channels"
 
     # Log channels
-    WELCOMEMSG_CHANNEL = 724238864855597056
     JOINLEAVE_CHANNEL = 726513291286806549
     MUTECHANNEL = 724244723023478806
 
@@ -231,6 +218,7 @@ If a mod is online but doesn't see your message in #verification, you can ping t
     REACT_SUCCESS = "\u2705"  #
     REACT_CONGRATS = u"\U0001F389"  #
     REACT_FIRST_BLOOD = u"\U0001F631"  #
+    REACT_VERIFICATION = u"\U0001F6C2"  #
 
     PHELP_MAX_CHANNELS = 10
     PHELP_MAX_TITLE = 20
@@ -329,7 +317,7 @@ class TestingEnv:
     ROLESCHANNEL = 776900486145900566
     ROLESMSG = 776901414940049438
 
-    WELCOMEMSG_CHANNEL = 776900487886012466
+    #WELCOMEMSG_CHANNEL = 776900487886012466
     JOINLEAVE_CHANNEL = 776900514931146792
     MUTECHANNEL = 776900510796087326
     BUMPCHANNEL = 776900513051967539
@@ -361,6 +349,7 @@ class TestingEnv:
     REACT_SUCCESS = "\u2705"  #
     REACT_CONGRATS = ProductionEnv.REACT_CONGRATS
     REACT_FIRST_BLOOD = ProductionEnv.REACT_FIRST_BLOOD
+    REACT_VERIFICATION = ProductionEnv.REACT_VERIFICATION
 
     PHELP_MAX_CHANNELS = 10
     PHELP_MAX_TITLE = 20

@@ -1,3 +1,4 @@
+from asyncio import sleep as async_sleep
 from datetime import datetime, timedelta
 
 import discord
@@ -13,81 +14,12 @@ class Verification(commands.Cog):
 
         self.bot = bot
 
-    @tasks.loop(hours=2)  # minutes=1
-    @db.flock
-    async def reminder_tick(self):
-        """ Auto kick inactive users and warn them
-        """
-        time_now = datetime.utcnow()
-
-        reminds = db["reminds"]["reminds"]
-
-        endreminds = []
-        for reminder in reminds:
-
-            guild = self.bot.get_guild(reminder["guild"])
-            member = guild.get_member(reminder["userid"])
-            reminder_dt = datetime(
-
-                reminder["year"],
-                reminder["month"],
-                reminder["day"],
-                reminder["hour"],
-                reminder["minute"],
-                0,
-                0,
-
-            )
-
-            if time_now > reminder_dt:
-
-                if reminder["status"] in [0, 1, 2]:  # [0, 1]
-
-                    await send_embed_dm(member, config.REMINDERMSG)
-
-                    newremind = reminder_dt + timedelta(hours=24)
-
-                    endreminds.append(
-
-                        {
-
-                            "year": newremind.year,
-                            "month": newremind.month,
-                            "day": newremind.day,
-                            "hour": newremind.hour,
-                            "minute": newremind.minute,
-                            "userid": member.id,
-                            "guild": guild.id,
-                            "status": reminder["status"] + 1,
-
-                        }
-                    )
-
-                else:
-
-                    await log(guild, member, "Kick", "been kicked for not verifying in time.")
-                    await send_embed_dm(member, config.REMINDKICKMSG)
-
-                    try:
-
-                        await member.kick(reason="Didn't verify.")
-
-                    except AttributeError:
-
-                        print("[w] Reminder kicking failed")
-
-            else:
-
-                endreminds.append(reminder)
-
-        db["reminds"] = {"reminds": endreminds}
+        self._reaction_message_id = None
 
     @commands.Cog.listener()
     async def on_ready(self):
         """ Initialization
         """
-        self.reminder_tick.start()
-
         # Delete channel
         guild = self.bot.get_guild(config.GUILD)
 
@@ -104,7 +36,94 @@ class Verification(commands.Cog):
         # Create new channel
         overwrites = {
 
-            guild.get_role(config.UNVERIFIEDROLE):
+            guild.default_role:  # everyone
+
+            discord.PermissionOverwrite(
+
+                read_messages=True,
+                send_messages=False,
+                read_message_history=True,
+                add_reactions=False,
+
+            ),
+
+            guild.get_role(config.STAFFROLE):
+
+            discord.PermissionOverwrite(
+
+                read_messages=True,
+                send_messages=True,
+                read_message_history=True,
+
+            ),
+
+            guild.get_role(config.VERIFIEDROLE):
+
+            discord.PermissionOverwrite(
+
+                read_messages=False,
+                send_messages=False,
+                read_message_history=False,
+
+            ),
+
+            guild.get_role(config.NOVERIFIEDROLE):
+
+            discord.PermissionOverwrite(
+
+                read_messages=False,
+                send_messages=False,
+                read_message_history=False,
+
+            ),
+
+            guild.get_role(config.BOTLISTINGROLE):
+
+            discord.PermissionOverwrite(
+
+                read_messages=False,
+                send_messages=False,
+                read_message_history=False,
+
+            ),
+
+        }
+
+        vchannel = await guild.create_text_channel(
+
+            config.VERIFICATIONCHANNELNAME,
+
+            category=category,
+            overwrites=overwrites,
+            topic="Open ticket for verification"
+
+        )
+
+        info_message = await vchannel.send(config.VERIFICATIONCHANNELMESSAGE)
+
+        await info_message.add_reaction(config.REACT_VERIFICATION)
+
+        self._reaction_message_id = info_message.id
+
+    async def _create_channel(self, member):
+        """ open new ticket
+        """
+        # Create new channel
+        guild = self.bot.get_guild(config.GUILD)
+        category = guild.get_channel(config.VERIFICATIONCHANNELCAT)
+
+        overwrites = {
+
+            guild.default_role:  # everyone
+
+            discord.PermissionOverwrite(
+
+                read_messages=False,
+                send_messages=False,
+
+            ),
+
+            member:  # member who opened ticket
 
             discord.PermissionOverwrite(
 
@@ -134,6 +153,16 @@ class Verification(commands.Cog):
 
             ),
 
+            guild.get_role(config.NOVERIFIEDROLE):
+
+            discord.PermissionOverwrite(
+
+                read_messages=False,
+                send_messages=False,
+                read_message_history=False,
+
+            ),
+
             guild.get_role(config.BOTLISTINGROLE):
 
             discord.PermissionOverwrite(
@@ -146,256 +175,209 @@ class Verification(commands.Cog):
 
         }
 
-        vchannel = await guild.create_text_channel(
+        new_ticket_channel = await guild.create_text_channel(
 
-            config.VERIFICATIONCHANNELNAME,
+            f"vticket-{member.id}",
 
             category=category,
             overwrites=overwrites,
-            topic="Verify yourself to get access to the " \
-                  "other channels and be able to communicate " \
-                  "with others.")
+            topic=f"ticket for member: {member.id}"
 
-        await vchannel.send(config.VERIFICATIONCHANNELMESSAGE)
+        )
+
+        await new_ticket_channel.send(f"G'day {member.mention}, this is your new verification channel. Please stand by as a moderator will arrive in no time.")
+
+        # ask user a couple of question beforehand
+        async with new_ticket_channel.typing():
+
+            await async_sleep(4)
+            await new_ticket_channel.send("Nonetheless, I'd like to ask a couple of questions in advance so that moderators can verify you more quickly...")
+            await async_sleep(6)
+            await new_ticket_channel.send("`1. What's the reason for your stay?`")
+            await async_sleep(4)
+            await new_ticket_channel.send("`2. In what way can our server help you?`")
+            await async_sleep(4)
+            await new_ticket_channel.send("`3. Why did you choose discord for that purpose?`")
+            await async_sleep(3)
+            await new_ticket_channel.send("Thank you so much for taking the time to verify youself.")
+            await async_sleep(2)
+            await new_ticket_channel.send("Now please be patient while a moderator is on his way... :)")
+            await async_sleep(1)
+
+    def _get_vticket_channel(self, user_id):
+        """ get verification channel for user id
+            exception: return None
+        """
+        # try to get user channel
+        target_channel = None
+
+        guild = self.bot.get_guild(config.GUILD)
+        category = guild.get_channel(config.VERIFICATIONCHANNELCAT)
+
+        for channel in category.channels:
+
+            if channel.type == discord.ChannelType.text and \
+               channel.name == f"vticket-{user_id}":
+
+                target_channel = channel
+
+        return target_channel
 
     @commands.Cog.listener()
-    @db.flock
+    async def on_raw_reaction_add(self, payload):
+        """ create new channel on reaction
+        """
+        # check if reaction of interest
+        if payload.emoji.name == config.REACT_VERIFICATION and \
+           not payload.member.bot and \
+           payload.message_id == self._reaction_message_id and \
+           self._get_vticket_channel(payload.user_id) is None:
+
+            await self._create_channel(payload.member)
+
+    @commands.Cog.listener()
     async def on_member_join(self, member):
         """ Send information to user and add set reminder
         """
-        # Welcome message
-        channel = self.bot.get_channel(config.WELCOMEMSG_CHANNEL)
-
-        msg = f"Hello <@{member.id}>!\nCheck out <#690216616163672136> to verify your account and start chatting, <#724238392723767357> to get answers to common questions and <#690219084469895225> to get special roles!"
-
-        embed = discord.Embed(
-
-            title="Welcome to Ethical Computing Society!",
-            description=msg,
-            color=config.COLOR,
-
-        )
-
-        await channel.send(embed=embed)
-
-        # DM
+        # Send welcome message
         await send_embed_dm(member, config.WELCOMEMSG)
 
-        # Reminder
-        reminds = db["reminds"]["reminds"]
-
-        reminder = datetime.utcnow() + timedelta(hours=24)
-
-        reminds.append(
-
-            {
-
-                "year": reminder.year,
-                "month": reminder.month,
-                "day": reminder.day,
-                "hour": reminder.hour,
-                "minute": reminder.minute,
-                "userid": member.id,
-                "guild": member.guild.id,
-                "status": 0,
-
-            }
-
-        )
-
-        db["reminds"] = {"reminds": reminds}
-
-        # Add unverified role
-        await member.add_roles(
-
-            member.guild.get_role(config.UNVERIFIEDROLE),
-
-            reason="Joined the server."
-
-        )
-
     @commands.Cog.listener()
-    @db.flock
     async def on_member_remove(self, member):
-        """ On member left
+        """ close vticket channel of member if exists
         """
-        reminds = db["reminds"]["reminds"]
+        # fetch vticket channel
+        vticket_channel = self._get_vticket_channel(member.id)
 
-        endreminds = []
+        # delete vticket channel if exists
+        if vticket_channel is not None:
 
-        for reminder in reminds:
-
-            if reminder["userid"] != member.id:
-
-                endreminds.append(reminder)
-
-        db["reminds"] = {"reminds": endreminds}
+            await vticket_channel.delete()
 
     @commands.command(pass_context=True)
     @commands.has_role(config.STAFFROLE)
-    @db.flock
     async def verify(self, ctx):
-        """ Remove unverified role from user and append member role
+        """ append VERIFIEDROLE to vticket user of current channel
         """
-        args = parse_arguments(ctx.message.content)
+        # check if command is run in vticket channel
+        if not ctx.message.channel.name.startswith("vticket-"):
 
-        member = await check_for_id(ctx, args)
+            await ctx.message.channel.send("Sorry, but this is not a vticket channel.")
+
+            return
+
+        # get user information
+        user_id = int(ctx.message.channel.name[8:])
+        member = await ctx.guild.fetch_member(user_id)
 
         verifiedrole = ctx.message.guild.get_role(config.VERIFIEDROLE)
-        unverifiedrole = ctx.message.guild.get_role(config.UNVERIFIEDROLE)
 
         await member.add_roles(
 
             verifiedrole,
 
-            reason="Verified by a moderator."
+            reason="verified by a moderator"
 
         )
 
-        await member.remove_roles(
-
-            unverifiedrole,
-
-            reason="Verified by a moderator."
-
-        )
-
-        await ctx.message.channel.send(f"Successfully verified {member.mention}!")
-
+        await ctx.message.channel.send(f"Successfully verified {member.mention}!\nThe ticket will close shortly...")
         await log(ctx.message.guild, ctx.message.author, "Verification", f"verified {member.mention}")
+        await async_sleep(5)
 
-        # Remove data entry
-        reminds = db["reminds"]["reminds"]
-
-        endreminds = []
-
-        for reminder in reminds:
-
-            if reminder["userid"] != member.id:
-
-                endreminds.append(reminder)
-
-        db["reminds"] = {"reminds": endreminds}
+        # delete channel
+        await ctx.message.channel.delete()
 
     @commands.command(pass_context=True)
     @commands.has_role(config.STAFFROLE)
     @db.flock
     async def deny(self, ctx):
-        """ Ban users due to verification denial
+        """ ban users due to verification denial
         """
-        args = parse_arguments(ctx.message.content)
+        # check if command is run in vticket channel
+        if not ctx.message.channel.name.startswith("vticket-"):
 
-        member = await check_for_id(ctx, args)
+            await ctx.message.channel.send("Sorry, but this is not a vticket channel.")
 
+            return
+
+        # get user information
+        user_id = int(ctx.message.channel.name[8:])
+        member = await ctx.guild.fetch_member(user_id)
+
+        # ban user
         await send_embed_dm(member, config.DENIEDMSG)
+        await member.ban(reason="verification denied by a moderator", delete_message_days=0)
+        await log(ctx.guild, ctx.author, "Reject", f"rejected {member.mention}")
 
-        await member.ban(reason="Verification denied by a moderator.")
+        # Write data
+        punishments = db["punishments"]["punishments"]
 
-        await log(ctx.message.guild, ctx.message.author, "Reject", f"rejected {member.mention}")
+        endtime = datetime.utcnow() + timedelta(days=14)
 
-        await ctx.message.channel.send(f"Successfully denied {member.mention}!")
+        punishments.append(
 
-        # Remove data entry
-        reminds = db["reminds"]["reminds"]
+            {
 
-        endreminds = []
+                "year": endtime.year,
+                "month": endtime.month,
+                "day": endtime.day,
+                "hour": endtime.hour,
+                "minute": endtime.minute,
+                "userid": member.id,
+                "guild": ctx.guild.id,
+                "type": "ban",
 
-        for reminder in reminds:
+            }
 
-            if reminder["userid"] != member.id:
+        )
 
-                endreminds.append(reminder)
+        db["punishments"] = {"punishments": punishments}
 
-        db["reminds"] = {"reminds": endreminds}
+        # Write log
+        now = datetime.utcnow()
+
+        logs = db["logs"]["logs"]
+
+        logs.append(
+
+            {
+
+                "year": now.year,
+                "month": now.month,
+                "day": now.day,
+                "hour": now.hour,
+                "minute": now.minute,
+                "userid": member.id,
+                "guild": ctx.guild.id,
+                "duration": "14d",
+                "reason": "verification denied by moderator",
+                "type": "ban"
+
+            }
+
+        )
+
+        db["logs"] = {"logs": logs}
+
+        # the channel will automatically delete due to on_member_remove
 
     @commands.command(pass_context=True)
     @commands.has_role(config.STAFFROLE)
-    async def vpurge(self, ctx):
-        """ Purge verification channel by deleting and recreating it
-
-        Verification channel will be always at the bottom of the verification category.
-
+    async def vclose(self, ctx):
+        """ close vticket
         """
-        category = ctx.message.guild.get_channel(config.VERIFICATIONCHANNELCAT)
+        # check if command is run in vticket channel
+        if not ctx.message.channel.name.startswith("vticket-"):
 
-        # Delete channel
-        for channel in category.channels:
+            await ctx.message.channel.send("Sorry, but this is not a vticket channel.")
 
-            if channel.type == discord.ChannelType.text and \
-               channel.name == config.VERIFICATIONCHANNELNAME:
+            return
 
-                await channel.delete()
+        await ctx.message.channel.send(f"The ticket will close shortly...")
+        await async_sleep(5)
 
-        # Create new channel
-        overwrites = {
-
-            ctx.message.guild.get_role(config.UNVERIFIEDROLE):
-
-            discord.PermissionOverwrite(
-
-                read_messages=True,
-                send_messages=True,
-                read_message_history=True,
-
-            ),
-
-            ctx.message.guild.get_role(config.STAFFROLE):
-
-            discord.PermissionOverwrite(
-
-                read_messages=True,
-                send_messages=True,
-                read_message_history=True,
-
-            ),
-
-            ctx.message.guild.get_role(config.VERIFIEDROLE):
-
-            discord.PermissionOverwrite(
-
-                read_messages=False,
-                send_messages=False,
-                read_message_history=False,
-
-            ),
-
-            ctx.message.guild.get_role(config.NOVERIFIEDROLE):
-
-            discord.PermissionOverwrite(
-
-                read_messages=False,
-                send_messages=False,
-                read_message_history=False,
-
-            ),
-
-            ctx.message.guild.get_role(config.BOTLISTINGROLE):
-
-            discord.PermissionOverwrite(
-
-                read_messages=False,
-                send_messages=False,
-                read_message_history=False,
-
-            ),
-
-        }
-
-        vchannel = await ctx.message.guild.create_text_channel(
-
-            config.VERIFICATIONCHANNELNAME,
-
-            category=category,
-            overwrites=overwrites,
-            topic="Verify yourself to get access to the " \
-                  "other channels and be able to communicate " \
-                  "with others.")
-
-        await vchannel.send(config.VERIFICATIONCHANNELMESSAGE)
-
-        await log(ctx.message.guild, ctx.message.author, "Verification Purge", "purged the #verification channel!")
-
-        await ctx.message.channel.send("Successfully purged the verification channel!")
+        # delete channel
+        await ctx.message.channel.delete()
 
 
 class NoVerification(commands.Cog):
@@ -512,21 +494,6 @@ class NoVerification(commands.Cog):
         """ Send information to user
         """
         # Welcome message
-        channel = self.bot.get_channel(config.WELCOMEMSG_CHANNEL)
-
-        msg = f"Hello <@{member.id}>!\nCheck out <#724238392723767357> to get answers to common questions and <#690219084469895225> to get special roles!"
-
-        embed = discord.Embed(
-
-            title="Welcome to Ethical Computing Society!",
-            description=msg,
-            color=config.COLOR,
-
-        )
-
-        await channel.send(embed=embed)
-
-        # DM
         await send_embed_dm(member, config.NOVERIFICATION_WELCOMEMSG)
 
         # # Add member role | COMMENTED OUT: Due to rule screening
