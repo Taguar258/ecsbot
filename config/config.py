@@ -112,8 +112,8 @@ class ProductionEnv:
     VTICKET_AUTOCLOSEREMINDER_DAY = 1  # delta day until reminder is sent
     VTICKET_AUTOCLOSE_DAY = 1  # delta day until ticket is closed after reminder
 
-    VTICKET_TRANSCRIPT_CHANNEL = "1015780526113705985"
-    VTICKET_MEDIA_ROLE = "1015780927131103232"
+    VTICKET_TRANSCRIPT_CHANNEL = 1015780526113705985
+    VTICKET_MEDIA_ROLE = 1015780927131103232
 
     VERIFICATIONCHANNELMESSAGE = """Hello fellow human, please read the information down below:
 ```md
