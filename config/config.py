@@ -1,20 +1,71 @@
 import config.tokens as tokens
 from discord import Embed
 
+
+# target instance
 TESTING = True
 
 
 class ProductionEnv:
     """ Config for Production Environment
     """
-
-    # General stuff
+    # BOT INFORMATION
     TOKEN = tokens.TOKEN
-
-    PREFIX = "!"
-
+    PREFIX = "!"  # note some commands will utilize slashcommands
+    IGNORED_COMMANDS = ["d"]
     COLOR = 0x57408b
 
+    # GUILD INFORMATION
+    GUILD = 690212435306741901
+
+    # ROLES
+    ROOTROLE = 690212500784152591
+    MODROLE = 690212787087081554
+    DEVROLE = 690212865688469545
+    TRIALMODROLE = 690232623167045703
+    STAFFROLE = 724251714613411851
+    HELPERROLE = 690212809648242693
+    CRYPTOROLE = 867784404243578940
+    BOTLISTINGROLE = 690260998934102080
+    VERIFIEDROLE = 690212961876312094
+    NOVERIFIEDROLE = 864887304149139516
+    UNVERIFIEDROLE = 732212270385332225
+    PHELP_MUTE_ROLE = 798178561797521459
+    MUTEDROLE = 690254996004012050
+
+    # CATEGORIES
+    VERIFICATIONCHANNELCAT = 690212435310936085
+    PHELPCATEGORY = 798177254873235487
+
+    # CHANNELS
+    MEMBERCOUNTCHANNEL = 755757420021809322
+    ROLESCHANNEL = 690219084469895225
+    JOINLEAVE_CHANNEL = 726513291286806549
+    MUTECHANNEL = 724244723023478806
+    LOGCHANNEL = 746076232634073118
+    BUMPCHANNEL = 690269195690049637
+    CRYPTOANNOUNCMENTCHANNEL = 866331210087006258
+
+    # VOTE MUTE
+    VOTE_REACTION_MUTE = b"8J+Uhw=="
+    VOTE_REACTION_NO_MUTE = b"8J+UiA=="
+
+    TRIP_LEVEL = 0.012
+
+    # CUSTOM ROLES {b64reaction: [rolename, roleid]}
+    ROLESMSG = 870466038624583681
+    ROLES = {
+
+        b"8J+UlA==": ["ping", 690239204667818102],
+        b"4oyo77iP": ["coder", 690243098533822485],
+        b"8J+Suw==": ["hacker", 690243125225980007],
+        b"8J+Upw==": ["hardware", 726809084975906856],
+        b"8J+Svw==": ["linux", 798178796192006174],
+        b"8J+UkA==": ["crypto", 870061882667573278],
+
+    }
+
+    # STATUS MESSAGES
     STATUS = [
 
         "Busy Researching Humans On Ethical Computing Society...",
@@ -34,12 +85,14 @@ class ProductionEnv:
 
     ]
 
-    # DB
+    # DATA STORING
+    SAVE_FREQUENCY = 300  # seconds
+    BACKUP_FREQUENCY = 3600  # seconds
+
     DATA_FILES_EMPTY = {
 
         "logs": {"logs": []},
         "punishments": {"punishments": []},
-        "reminds": {"reminds": []},
         "public_help": {"current_channels": [], "freeze": False},
         "crypto_challenge": {"solution-hash": ""},
 
@@ -47,48 +100,20 @@ class ProductionEnv:
 
     DATA_FILES = DATA_FILES_EMPTY.keys()
 
-    # DATA STORING
-    SAVE_FREQUENCY = 300  # seconds
-    BACKUP_FREQUENCY = 3600  # seconds
-
-    # ID of the Guild.
-    GUILD = 690212435306741901
-
-    # Roles for the Verification-Mechanism and others
-    STAFFROLE = 724251714613411851
-    MODROLE = 690212787087081554
-    TRIALMODROLE = 690232623167045703
-    DEVROLE = 690212865688469545
-    MUTEDROLE = 690254996004012050
-    ROOTROLE = 690212500784152591
-    CRYPTOROLE = 867784404243578940
-    HELPERROLE = 690212809648242693
-
-    BOTLISTINGROLE = 690260998934102080
-
-    # Ban
+    # MODERATION
     BANDELETEMESSAGES = 2  # Delete messages of last 2 days
 
-    # Custom roles {b64reaction: [rolename, roleid]}
-    ROLES = {
-
-        b"8J+UlA==": ["ping", 690239204667818102],
-        b"4oyo77iP": ["coder", 690243098533822485],
-        b"8J+Suw==": ["hacker", 690243125225980007],
-        b"8J+Upw==": ["hardware", 726809084975906856],
-        b"8J+Svw==": ["linux", 798178796192006174],
-        b"8J+UkA==": ["crypto", 870061882667573278],
-
-    }
-
-    # Verification channel stuff
-    UNVERIFIEDROLE = 732212270385332225
-    VERIFIEDROLE = 690212961876312094
-
+    # VERIFICATION CHANNEL
     VERIFICATIONENABLED = True
-
-    VERIFICATIONCHANNELCAT = 690212435310936085
     VERIFICATIONCHANNELNAME = "verification"
+    NOVERIFICATION_CHANNELNAME = "missing-channels"
+
+    VTICKET_AUTOCLOSEREMINDER = "Hello {mention}, here is a quick ping as this ticket has been inactive since one day.\nAnother day of inactivity will result in the closing of your ticket."
+    VTICKET_AUTOCLOSEREMINDER_DAY = 1  # delta day until reminder is sent
+    VTICKET_AUTOCLOSE_DAY = 1  # delta day until ticket is closed after reminder
+
+    VTICKET_TRANSCRIPT_CHANNEL = "1015780526113705985"
+    VTICKET_MEDIA_ROLE = "1015780927131103232"
 
     VERIFICATIONCHANNELMESSAGE = """Hello fellow human, please read the information down below:
 ```md
@@ -103,26 +128,29 @@ class ProductionEnv:
 **Thus please verify yourself by reacting to this message with :passport_control:**
 ```"""
 
-    REMINDERMSG = Embed(
+    # PUBLIC HELP
+    PHELP_MAX_CHANNELS = 10
+    PHELP_MAX_TITLE = 20
 
-        title="Ethical Computing Society",
-        description="We've seen that you didn't verify yet! Please verify yourself in #verification!",
-        color=COLOR,
+    PHELP_REMEMBER_AFTER_DAY = 2
+    PHELP_DELETE_AFTER_DAY = 4
 
-    )
+    # Enable/Disable ISS feature
+    ISS_INFO_ENABLED = False
 
-    REMINDKICKMSG = Embed(
-
-        title="Ethical Computing Society",
-        description="We're sorry, but you didn't verify in time and we had to kick you. You can always rejoin if you want to come back!\nhttps://discord.gg/CkMmZsR",
-        color=COLOR,
-
-    )
-
+    # PREDEFINED MESSAGES
     WELCOMEMSG = Embed(
 
         title="Welcome human!",
         description="We are incredibly sorry to welcome you via direct message as it's annoying to most people. Nevertheless, we **chose to use this method instead of a welcome channel as welcome channels decrease privacy** and pretty much just exist to be muted. All we wanted to inform you about is that we welcome you, are present in case of questions, and **would like you to verify yourself in <#690216616163672136> so that we moderators can provide an annoyance free experience by checking the users intentions**. **We wish you a pleaseant stay** and **ask you to not block this bot** as it is used to inform our members about punishments.",
+        color=COLOR,
+
+    )
+
+    ACCEPTEDMSG = Embed(
+
+        title="Thank you so much for your time!",
+        description="We just wanted to quickly inform that you were successfully verified.\nWe wish you a pleaseant stay.",
         color=COLOR,
 
     )
@@ -135,7 +163,6 @@ class ProductionEnv:
 
     )
 
-    # No verification channel stuff
     NOVERIFICATION_WELCOMEMSG = Embed(
 
         title="Welcome human!",
@@ -144,25 +171,6 @@ class ProductionEnv:
 
     )
 
-    NOVERIFIEDROLE = 864887304149139516
-
-    NOVERIFICATION_CHANNELNAME = "missing-channels"
-
-    # Log channels
-    JOINLEAVE_CHANNEL = 726513291286806549
-    MUTECHANNEL = 724244723023478806
-
-    # Other important channels
-    LOGCHANNEL = 746076232634073118
-    MEMBERCOUNTCHANNEL = 755757420021809322
-    ROLESCHANNEL = 690219084469895225
-    BUMPCHANNEL = 690269195690049637
-    CRYPTOANNOUNCMENTCHANNEL = 866331210087006258
-
-    # The message for the reaction roles
-    ROLESMSG = 870466038624583681
-
-    # Discord Embeds for Reminders and various other warnings.
     UNMUTEMSG = Embed(
 
         title="Ethical Computing Society",
@@ -211,27 +219,14 @@ class ProductionEnv:
 
     )
 
-    # Variables regarding the public help system
-    PHELPCATEGORY = 798177254873235487
-
+    # SELF-REACTIONS
     REACT_ERROR = "\u2757"    # https://www.fileformat.info/info/unicode/
     REACT_SUCCESS = "\u2705"  #
     REACT_CONGRATS = u"\U0001F389"  #
     REACT_FIRST_BLOOD = u"\U0001F631"  #
     REACT_VERIFICATION = u"\U0001F6C2"  #
 
-    PHELP_MAX_CHANNELS = 10
-    PHELP_MAX_TITLE = 20
-
-    PHELP_REMEMBER_AFTER_DAY = 2
-    PHELP_DELETE_AFTER_DAY = 4
-
-    PHELP_MUTE_ROLE = 798178561797521459
-
-    # Enable/Disable ISS feature
-    ISS_INFO_ENABLED = False
-
-    # Command filter
+    # COMMAND FILTER
     GREY_COMMANDS = {  # https://regex101.com/
 
         r"\b(rm|shred|rmdir)\b": ["as it deletes files and/or folders", "Make sure to create a backup before runing this command and look out for the star '*' char, as it patter matches everything."],
@@ -257,39 +252,20 @@ class ProductionEnv:
 
     GREY_COMMANDS_COMBINED = "(" + ")|(".join(GREY_COMMANDS.keys()) + ")"
 
-    # Ignored Commands
-    IGNORED_COMMANDS = ["d"]
 
-    # Vote Mute
-    VOTE_REACTION_MUTE = b"8J+Uhw=="
-    VOTE_REACTION_NO_MUTE = b"8J+UiA=="
-
-    MUTE_CHANNEL = 724244723023478806
-
-    TRIP_LEVEL = 0.012
-
-
-class TestingEnv:
+class TestingEnv(ProductionEnv):
     """ Config for Production Environment
     """
-
+    # BOT INFORMATION
     TOKEN = tokens.TOKENTESTING
 
-    PREFIX = "!"
-
-    COLOR = 0x57408b
-
+    # STATUS MESSAGES
     STATUS = ["ECS - TESTING!"]
-    MAD_STATUS = ProductionEnv.MAD_STATUS
 
+    # GUILD INFORMATION
     GUILD = 776898177302921286
 
-    DATA_FILES_EMPTY = ProductionEnv.DATA_FILES_EMPTY
-    DATA_FILES = ProductionEnv.DATA_FILES
-
-    SAVE_FREQUENCY = ProductionEnv.SAVE_FREQUENCY
-    BACKUP_FREQUENCY = ProductionEnv.BACKUP_FREQUENCY
-
+    # ROLES
     UNVERIFIEDROLE = 776900475161280514
     VERIFIEDROLE = 776900474552844288
     STAFFROLE = 776900462753480714
@@ -300,78 +276,34 @@ class TestingEnv:
     ROOTROLE = 776900457686892614
     CRYPTOROLE = 870029579211898900
     HELPERROLE = 776900466528616448
-
     BOTLISTINGROLE = 776900469040611368
+    NOVERIFIEDROLE = 861011856025059359
+    PHELP_MUTE_ROLE = 796390021526585364
+    VTICKET_MEDIA_ROLE = 932091114545090630
 
-    ROLES = {b"8J+UlA==": ["ping", 776900472358305833],
-             b"4oyo77iP": ["coder", 776900472086331452],
-             b"8J+Suw==": ["hacker", 776900471004594188],
-             b"8J+Upw==": ["hardware", 776900470601154580],
-             b"8J+Svw==": ["linux", 796079401544450109]}
+    # CUSTOM ROLES {b64reaction: [rolename, roleid]}
+    ROLESMSG = 776901414940049438
+    ROLES = {
+        b"8J+UlA==": ["ping", 776900472358305833],
+        b"4oyo77iP": ["coder", 776900472086331452],
+        b"8J+Suw==": ["hacker", 776900471004594188],
+        b"8J+Upw==": ["hardware", 776900470601154580],
+        b"8J+Svw==": ["linux", 796079401544450109],
+    }
 
+    # CATEGORIES
     VERIFICATIONCHANNELCAT = 776900479946194955
-    VERIFICATIONCHANNELNAME = "verification"
+    PHELPCATEGORY = 795634619927363605
+
+    # CHANNELS
     LOGCHANNEL = 776900515640115250
     MEMBERCOUNTCHANNEL = 776900480521338951
-
     ROLESCHANNEL = 776900486145900566
-    ROLESMSG = 776901414940049438
-
-    #WELCOMEMSG_CHANNEL = 776900487886012466
     JOINLEAVE_CHANNEL = 776900514931146792
     MUTECHANNEL = 776900510796087326
     BUMPCHANNEL = 776900513051967539
     CRYPTOANNOUNCMENTCHANNEL = 776900499853148201
-
-    VERIFICATIONCHANNELMESSAGE = ProductionEnv.VERIFICATIONCHANNELMESSAGE
-
-    VERIFICATIONENABLED = True
-    NOVERIFIEDROLE = 861011856025059359
-    NOVERIFICATION_WELCOMEMSG = ProductionEnv.NOVERIFICATION_WELCOMEMSG
-    NOVERIFICATION_CHANNELNAME = ProductionEnv.NOVERIFICATION_CHANNELNAME
-
-    BANDELETEMESSAGES = ProductionEnv.BANDELETEMESSAGES
-
-    WELCOMEMSG = ProductionEnv.WELCOMEMSG
-    REMINDERMSG = ProductionEnv.REMINDERMSG
-    KICKMSG = ProductionEnv.KICKMSG
-    DENIEDMSG = ProductionEnv.DENIEDMSG
-    UNMUTEMSG = ProductionEnv.UNMUTEMSG
-    MUTEMSG = ProductionEnv.MUTEMSG
-    BANMSG = ProductionEnv.BANMSG
-    UNBANMSG = ProductionEnv.UNBANMSG
-    WARNMSG = ProductionEnv.WARNMSG
-    REMINDKICKMSG = ProductionEnv.REMINDKICKMSG
-
-    PHELPCATEGORY = 795634619927363605
-
-    REACT_ERROR = "\u2757"    # https://www.fileformat.info/info/unicode/
-    REACT_SUCCESS = "\u2705"  #
-    REACT_CONGRATS = ProductionEnv.REACT_CONGRATS
-    REACT_FIRST_BLOOD = ProductionEnv.REACT_FIRST_BLOOD
-    REACT_VERIFICATION = ProductionEnv.REACT_VERIFICATION
-
-    PHELP_MAX_CHANNELS = 10
-    PHELP_MAX_TITLE = 20
-
-    PHELP_REMEMBER_AFTER_DAY = 2
-    PHELP_DELETE_AFTER_DAY = 4
-
-    PHELP_MUTE_ROLE = 796390021526585364
-
-    ISS_INFO_ENABLED = False
-
-    GREY_COMMANDS = ProductionEnv.GREY_COMMANDS
-    GREY_COMMANDS_COMBINED = ProductionEnv.GREY_COMMANDS_COMBINED
-
-    IGNORED_COMMANDS = ProductionEnv.IGNORED_COMMANDS
-
-    VOTE_REACTION_MUTE = ProductionEnv.VOTE_REACTION_MUTE
-    VOTE_REACTION_NO_MUTE = ProductionEnv.VOTE_REACTION_NO_MUTE
-
-    MUTE_CHANNEL = 776900510796087326
-
-    TRIP_LEVEL = ProductionEnv.TRIP_LEVEL
+    VTICKET_TRANSCRIPT_CHANNEL = 932087834607779850
 
 
 if TESTING:

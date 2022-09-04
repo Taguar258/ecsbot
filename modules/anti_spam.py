@@ -76,7 +76,7 @@ class AntiSpam(commands.Cog):
 
         guild = self.bot.get_guild(config.GUILD)
         log_channel = self.bot.get_channel(config.LOGCHANNEL)
-        mute_channel = self.bot.get_channel(config.MUTE_CHANNEL)
+        mute_channel = self.bot.get_channel(config.MUTECHANNEL)
         muted_role = guild.get_role(config.MUTEDROLE)
         author = await guild.fetch_member(author_id)
         channel = self.bot.get_channel(channel_id)

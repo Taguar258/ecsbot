@@ -29,7 +29,7 @@ class CryptoChallenge(commands.Cog):
             solution = db["crypto_challenge"]["solution-hash"]
 
             if solution != "" and \
-               solution in "".join(message.content.split()):  # TODO: TEST
+               solution in "".join(message.content.split()):
 
                 await message.channel.send(f"Crypto solution (posted by {message.author.mention}) has been eradicated!")
 

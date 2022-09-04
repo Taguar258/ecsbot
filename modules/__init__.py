@@ -154,7 +154,7 @@ async def log(guild, author, title, message):
     embed = Embed(
 
         title=title,
-        description=f"{author.mention} has {message}",
+        description=f"<@{author.id}> has {message}",  # avoid using author.mention
         color=config.COLOR
 
     )
@@ -211,7 +211,7 @@ class DataHandler:
 
         # (Static) Variables
         self._data_files = config.DATA_FILES
-        self._warning_threshold = 8  # On len(self._queue) warn user
+        self._warning_threshold = 4  # On len(self._queue) warn user
 
         # (DYNAMIC) Queue Variables
         self._queue = []

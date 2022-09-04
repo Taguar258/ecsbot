@@ -18,21 +18,23 @@ intents.presences = False
 bot = commands.Bot(command_prefix=config.PREFIX, intents=intents)
 slash = SlashCommand(bot, sync_commands=True)
 
+bot.remove_command('help')
+
 # Bot extensions
 bot_extensions = [
 
     "modules.debug",
-    "modules.moderation",
     "modules.message_detection",
     "modules.vote_mute",
-    "modules.anti_spam",
     "modules.verification",
     "modules.message_log",
     "modules.roles",
     "modules.cleanup",
     "modules.bump_reminder",
-    "modules.crypto_challenge",
-    "modules.iss",
+    # "modules.iss",
+    # "modules.anti_spam",
+    # "modules.crypto_challenge",
+    # "modules.moderation",
     # "modules.public_help",
 
 ]
@@ -98,3 +100,4 @@ if TESTING:
 
     print(f"\033[37mCurrent memory usage:\033[36m {current / 10**6}MB\033[0m")
     print(f"\033[37mPeak                :\033[36m {peak / 10**6}MB\033[0m")
+

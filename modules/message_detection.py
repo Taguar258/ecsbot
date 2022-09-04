@@ -3,7 +3,7 @@ from re import IGNORECASE, MULTILINE, search, sub
 from time import sleep
 
 from config.config import config
-from discord import Embed
+from discord import Embed, utils
 from discord.ext import commands
 
 # from requests import get as requests_get
@@ -20,10 +20,14 @@ class MessageDetection(commands.Cog):
     async def on_message(self, message):
         """ On message sent
         """
-        if not message.author.bot and \
-           config.HELPERROLE not in [role.id for role in message.author.roles]:
+        # retrieve member object to read roles of user aka author
+        guild = self.bot.get_guild(config.GUILD)
+        member = guild.get_member(message.author.id)
 
-            message.content = self.filter_md(message.content)  # TODO: Consider using clean_content
+        if not message.author.bot and \
+           config.HELPERROLE not in [role.id for role in member.roles]:
+
+            message.content = utils.remove_markdown(message.content)
 
             await self.detect_dangerous_commands(message)
 
@@ -43,30 +47,36 @@ class MessageDetection(commands.Cog):
     async def on_message_edit(self, before, after):
         """ On message edit
         """
-        if not after.author.bot:
+        # retrieve member object to read roles of user aka author
+        guild = self.bot.get_guild(config.GUILD)
+        member = guild.get_member(after.author.id)
 
-            after.content = self.filter_md(after.content)
+        if not after.author.bot and \
+           config.HELPERROLE not in [role.id for role in member.roles]:
+
+            # after.content = self.filter_md(after.content)
+            after.content = utils.remove_markdown(after.content)
 
             await self.detect_dangerous_commands(after)
 
-    def filter_md(self, md):
-        """ Remove markdown syntax from content of message
-        """
-        for rep in ["*", "`", "~", "_"]:
+    # def filter_md(self, md):
+    #     """ Remove markdown syntax from content of message
+    #     """
+    #     for rep in ["*", "`", "~", "_"]:
 
-            md = md.replace(f"\\{rep}", rep)
+    #         md = md.replace(f"\\{rep}", rep)
 
-        for _ in range(20):  # Potential sec risk
+    #     for _ in range(20):  # Potential sec risk
 
-            match = search(r"((\*.*\*)|(\_.*\_)|(\~.*\~)|(\`.*\`))", md)  # Bad regex
+    #         match = search(r"((\*.*\*)|(\_.*\_)|(\~.*\~)|(\`.*\`))", md)  # Bad regex
 
-            if not match:
+    #         if not match:
 
-                break
+    #             break
 
-            md = md[:match.start()] + md[(match.start() + 1):(match.end() - 1)] + md[match.end():]
+    #         md = md[:match.start()] + md[(match.start() + 1):(match.end() - 1)] + md[match.end():]
 
-        return md
+    #     return md
 
     async def detect_dangerous_commands(self, message):
         """ Check if message includes potentially harmful code.

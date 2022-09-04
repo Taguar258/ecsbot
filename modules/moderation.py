@@ -22,26 +22,14 @@ class Moderation(commands.Cog):
     async def punishment_tick(self):
         """ Handling of expired punishments
         """
-        bancache = {}
-
         now = datetime.utcnow()
+        guild = self.bot.get_guild(config.GUILD)
 
         punishments = db["punishments"]["punishments"]
 
         endpunishments = []
 
         for punishment in punishments:
-
-            if punishment["guild"] not in bancache.keys():
-
-                guild = self.bot.get_guild(punishment["guild"])
-
-                bancache[punishment["guild"]] = await guild.bans()
-
-            bans = bancache[punishment["guild"]]
-            member = guild.get_member(punishment["userid"])
-
-            ban_member = [ban.user for ban in bans if ban.user.id == punishment["userid"]]
 
             punishtime = datetime(
 
@@ -57,7 +45,11 @@ class Moderation(commands.Cog):
 
             if now > punishtime:
 
-                if punishment["type"] == "mute":
+                user = await self.bot.fetch_user(punishment["userid"])
+                member = guild.get_member(punishment["userid"])  # shouldn't fetch both
+
+                if punishment["type"] == "mute" and \
+                   member is not None:  # skip if user not member anymore
 
                     await send_embed_dm(member, config.UNMUTEMSG)
                     await log(guild, member, "Unmute", "been unmuted due to expiration!")
@@ -68,9 +60,10 @@ class Moderation(commands.Cog):
 
                 elif punishment["type"] == "ban":
 
-                    await log(guild, ban_member[0], "Unban", "been unbanned due to expiration!")
+                    await log(guild, user, "Unban", "been unbanned due to expiration!")
 
-                    await ban_member[0].unban(reason="Ban expired.")
+                    await guild.unban(user, reason="Ban expired.")
+
             else:
 
                 endpunishments.append(punishment)
@@ -113,10 +106,25 @@ class Moderation(commands.Cog):
         """
         args = parse_arguments(ctx.message.content)
 
-        member = await check_for_id(ctx, args)
+        member = await check_for_id(ctx, args, ignore_errors=True)
 
+        # check if not member and try to fetch user object
+        if member is None:
+
+            user = await self.bot.fetch_user(args[0])
+
+            if user is None:
+
+                await ctx.message.channel.send("Could not fetch user.")
+
+                raise IgnoreException
+
+            member = user
+
+        # fetch member data
         fullname = get_full_name(member)
 
+        # initialization of user device object
         class UserDevice:
 
             def __init__(self, member):
@@ -135,28 +143,44 @@ class Moderation(commands.Cog):
 
                 return f"<Device value={self.code}>"
 
-        device = UserDevice(member)
-
+        # embed generation
         embed = discord.Embed(title="Whois:", color=config.COLOR)
 
-        information = {
+        if isinstance(member, discord.Member):
 
-            "Nick": member.nick,
-            "Username": fullname,
-            "Color": member.color,
-            "Joined": member.joined_at.strftime("%d/%m/%Y %H:%M:%S"),
-            "Created": member.created_at.strftime("%d/%m/%Y %H:%M:%S"),
-            "Premium Since": ("None" if member.premium_since is None else member.premium_since.strftime("%d/%m/%Y %H:%M:%S")),
-            "Device": device,
-            "Verified": member.pending,
-            "Top Role": member.top_role,
-            "Roles": [role.name for role in member.roles],
-            "Guild Permissions": member.guild_permissions,
-            "Flags": {flag[0]: flag[1] for flag in member.public_flags},
-            "Bot": member.bot,
-            "Mention": member.mention,
+            device = UserDevice(member)
 
-        }
+            information = {
+
+                "Nick": member.nick,
+                "Username": fullname,
+                "Color": member.color,
+                "Joined": member.joined_at.strftime("%d/%m/%Y %H:%M:%S"),
+                "Created": member.created_at.strftime("%d/%m/%Y %H:%M:%S"),
+                "Premium Since": ("None" if member.premium_since is None else member.premium_since.strftime("%d/%m/%Y %H:%M:%S")),
+                "Device": device,
+                "Pending": member.pending,
+                "Top Role": member.top_role,
+                "Roles": [role.name for role in member.roles],
+                "Guild Permissions": member.guild_permissions,
+                "Flags": {flag[0]: flag[1] for flag in member.public_flags},
+                "Bot": member.bot,
+                "Mention": member.mention,
+
+            }
+
+        elif isinstance(member, discord.User):
+
+            information = {
+
+                "Username": fullname,
+                "Color": member.color,
+                "Created": member.created_at.strftime("%d/%m/%Y %H:%M:%S"),
+                "Flags": {flag[0]: flag[1] for flag in member.public_flags},
+                "Bot": member.bot,
+                "Mention": member.mention,
+
+            }
 
         for name, value in information.items():
 
@@ -332,7 +356,7 @@ class Moderation(commands.Cog):
         db["logs"] = {"logs": logs}
 
         # Send mention into mute-appeal
-        mute_channel = self.bot.get_channel(config.MUTE_CHANNEL)
+        mute_channel = self.bot.get_channel(config.MUTECHANNEL)
         await mute_channel.send(f"Sorry {member.mention}, you have been muted. Nonetheless, you have access to this hidden channel so that you can communicate with the server's moderators.")
 
         await ctx.message.channel.send(f"Successfully muted {member.mention}!")

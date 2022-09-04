@@ -50,7 +50,7 @@ class VoteMute(commands.Cog):
 
         await message.channel.send(f"The member <@{message.author.id}> has been vote-muted.")
 
-        mute_channel = client.get_channel(config.MUTE_CHANNEL)
+        mute_channel = client.get_channel(config.MUTECHANNEL)
 
         await mute_channel.send(f"Sorry <@{message.author.id}>, you have been muted due to possible rule-breaking.\nPlease wait for an <@&690212787087081554>, to discuss the issue, and get unmuted.")
         await mute_channel.send(f"[{pro_count}/{contra_count}]\n||{message.content}||")
