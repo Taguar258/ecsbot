@@ -11,9 +11,12 @@ from modules import IgnoreException, db
 print("[Use 'C^' twice instead of using 'Z^']")
 
 intents = discord.Intents.default()
+intents.messages = True
+intents.reactions = True
 intents.members = True
 intents.typing = False
 intents.presences = False
+# intents.message_content = True
 
 bot = commands.Bot(command_prefix=config.PREFIX, intents=intents)
 slash = SlashCommand(bot, sync_commands=True)
