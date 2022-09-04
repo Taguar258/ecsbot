@@ -28,12 +28,12 @@ bot_extensions = [
 
     "modules.debug",
     "modules.message_detection",
-    "modules.vote_mute",
     "modules.verification",
     "modules.message_log",
     "modules.roles",
     "modules.cleanup",
     "modules.bump_reminder",
+    # "modules.vote_mute",
     # "modules.iss",
     # "modules.anti_spam",
     # "modules.crypto_challenge",

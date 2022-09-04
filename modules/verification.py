@@ -332,7 +332,9 @@ class Verification(commands.Cog):
            payload.message_id == self._reaction_message_id and \
            self._get_vticket_channel(payload.user_id) is None:
 
-            await self._create_channel(payload.member)
+            guild = self.bot.get_guild(config.GUILD)
+            member = guild.get_member(payload.user_id)
+            await self._create_channel(member)
 
     @commands.Cog.listener()
     async def on_member_join(self, member):

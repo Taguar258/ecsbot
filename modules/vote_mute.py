@@ -57,72 +57,72 @@ class VoteMute(commands.Cog):
 
         await message.delete()
 
-        # Write punishment data
-        punishments = db["punishments"]["punishments"]
+        # # Write punishment data
+        # punishments = db["punishments"]["punishments"]
 
-        # Check if muted
-        muted = False
+        # # Check if muted
+        # muted = False
 
-        for punishment in punishments:
+        # for punishment in punishments:
 
-            if punishment["userid"] == message.author.id and \
-               punishment["type"] == "mute":
+        #     if punishment["userid"] == message.author.id and \
+        #        punishment["type"] == "mute":
 
-                muted = True
+        #         muted = True
 
-        if muted:
+        # if muted:
 
-            await message.channel.send(f"The member {message.author.mention} is already muted.")
+        #     await message.channel.send(f"The member {message.author.mention} is already muted.")
 
-            return
+        #     return
 
-        # Write punishment data
-        endtime = datetime.utcnow() + timedelta(minutes=999999999)
+        # # Write punishment data
+        # endtime = datetime.utcnow() + timedelta(minutes=999999999)
 
-        punishments.append(
+        # punishments.append(
 
-            {
+        #     {
 
-                "year": endtime.year,
-                "month": endtime.month,
-                "day": endtime.day,
-                "hour": endtime.hour,
-                "minute": endtime.minute,
-                "userid": message.author.id,
-                "guild": message.guild.id,
-                "type": "mute",
+        #         "year": endtime.year,
+        #         "month": endtime.month,
+        #         "day": endtime.day,
+        #         "hour": endtime.hour,
+        #         "minute": endtime.minute,
+        #         "userid": message.author.id,
+        #         "guild": message.guild.id,
+        #         "type": "mute",
 
-            }
+        #     }
 
-        )
+        # )
 
-        db["punishments"] = {"punishments": punishments}
+        # db["punishments"] = {"punishments": punishments}
 
-        # Write log
-        now = datetime.utcnow()
+        # # Write log
+        # now = datetime.utcnow()
 
-        logs = db["logs"]["logs"]
+        # logs = db["logs"]["logs"]
 
-        logs.append(
+        # logs.append(
 
-            {
+        #     {
 
-                "year": now.year,
-                "month": now.month,
-                "day": now.day,
-                "hour": now.hour,
-                "minute": now.minute,
-                "userid": message.author.id,
-                "guild": message.guild.id,
-                "duration": 999999999,
-                "reason": f"Vote Mute ({message.content[:50]})",
-                "type": "mute",
+        #         "year": now.year,
+        #         "month": now.month,
+        #         "day": now.day,
+        #         "hour": now.hour,
+        #         "minute": now.minute,
+        #         "userid": message.author.id,
+        #         "guild": message.guild.id,
+        #         "duration": 999999999,
+        #         "reason": f"Vote Mute ({message.content[:50]})",
+        #         "type": "mute",
 
-            }
+        #     }
 
-        )
+        # )
 
-        db["logs"] = {"logs": logs}
+        # db["logs"] = {"logs": logs}
 
         # Send log
         date = datetime.now().strftime("%d.%m.%Y")

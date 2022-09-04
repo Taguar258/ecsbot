@@ -17,13 +17,14 @@ class Roles(commands.Cog):
         """
         guild = self.bot.get_guild(payload.guild_id)
         reaction = b64encode(str(payload.emoji).encode())
+        member = guild.get_member(payload.user_id)
 
         if config.ROLESMSG == payload.message_id and \
            config.ROLESCHANNEL == payload.channel_id:
 
             if reaction in config.ROLES.keys():
 
-                await payload.member.add_roles(
+                await member.add_roles(
 
                     guild.get_role(
 
