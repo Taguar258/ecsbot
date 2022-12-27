@@ -291,14 +291,16 @@ class Verification(commands.Cog):
         # ask user a couple of question beforehand
         async with new_ticket_channel.typing():
 
-            await async_sleep(4)
-            await new_ticket_channel.send("Nonetheless, I'd like to ask a couple of questions in advance so that moderators can verify you more quickly...")
-            await async_sleep(6)
-            await new_ticket_channel.send("`1. What's the reason for your stay?`")
-            await async_sleep(4)
+            await async_sleep(3)
+            await new_ticket_channel.send("Nonetheless, I'd like to ask a couple of questions in advance so that moderators can verify you more quickly.")
+            await async_sleep(5)
+            await new_ticket_channel.send("`1. What is the reason for your stay?`")
+            await async_sleep(3)
             await new_ticket_channel.send("`2. In what way can our server help you?`")
-            await async_sleep(4)
-            await new_ticket_channel.send("Thank you so much for taking the time to verify youself.")
+            await async_sleep(3)
+            await new_ticket_channel.send("Thank you in advance for taking the time to verify youself.")
+            await async_sleep(3)
+            await new_ticket_channel.send("The quicker the questions above are answered, the quicker you will be verified.")
             await async_sleep(2)
             await new_ticket_channel.send("Please be patient while <@&690212787087081554>s are on their way... :)")
             await async_sleep(1)
