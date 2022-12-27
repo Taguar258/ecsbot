@@ -58,7 +58,6 @@ class Verification(commands.Cog):
         await transcript_channel.send(f"{author_name} ({channel.name})", file=transcript_file)
 
     @tasks.loop(hours=2)
-    @db.flock
     async def auto_inactivity_close_tick(self):
         """ automatically close inactive vtickets
         """
@@ -396,7 +395,7 @@ class Verification(commands.Cog):
 
     @commands.command(pass_context=True)
     @commands.has_role(config.STAFFROLE)
-    @db.flock
+    # @db.flock
     async def deny(self, ctx):
         """ ban users due to verification denial
         """
