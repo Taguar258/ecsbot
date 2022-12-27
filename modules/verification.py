@@ -26,13 +26,7 @@ class Verification(commands.Cog):
         messages = await channel.history(limit=None).flatten()
 
         # check for user interaction
-        if not sum([
-               
-                   1 if message.author.name == author_name else 0
-               
-               for message in messages
-           
-           ]):
+        if not any(message.author.name == author_name for message in messages):
 
             return
 
