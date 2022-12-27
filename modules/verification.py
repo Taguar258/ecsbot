@@ -61,7 +61,7 @@ class Verification(commands.Cog):
         guild = self.bot.get_guild(config.GUILD)
         transcript_channel = guild.get_channel(config.VTICKET_TRANSCRIPT_CHANNEL)
 
-        await transcript_channel.send(file=transcript_file)
+        await transcript_channel.send(f"{author_name} ({channel.name})", file=transcript_file)
 
     @tasks.loop(hours=2)
     @db.flock
