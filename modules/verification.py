@@ -190,7 +190,9 @@ class Verification(commands.Cog):
         self._reaction_message_id = info_message.id
 
         # start scheuduled tasks
-        self.auto_inactivity_close_tick.start()
+        if not self.auto_inactivity_close_tick.is_running():
+
+            self.auto_inactivity_close_tick.start()
 
     async def _create_channel(self, member):
         """ open new ticket
