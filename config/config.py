@@ -231,10 +231,10 @@ class ProductionEnv:
 
         r"\b(rm|shred|rmdir)\b": ["as it deletes files and/or folders", "Make sure to create a backup before runing this command and look out for the star '*' char, as it patter matches everything."],
         r"\b(chown|chmod)\s*-R\.*\b": ["as it removes all permission to a file or directory", "We would not suggest running this command."],
-        r":(){ :\|: & };:": ["as it is a for bomb and will freeze your computer", "We do not recommend running the command."],
+        r":(){ :\|: & };:": ["as it is a fork bomb and will freeze your computer", "We do not recommend running the command."],
         r"\bdd.*of=.*": ["as it could overwrite important data", "We do not recommend running this, if you do not understand what the command does."],
-        r"\bgparted\b": ["as it could format important data", "We do not recommend using this, if you do not want to mess with your data."],
-        r"\bparted\b": ["as it could format important data", "We do not recommend using this, if you do not want to mess with your data."],
+        # r"\bgparted\b": ["as it could format important data", "We do not recommend using this, if you do not want to mess with your data."],
+        # r"\bparted\b": ["as it could format important data", "We do not recommend using this, if you do not want to mess with your data."],
         r"\bmkfs.*": ["as it could format important data", "We do not recommend using this, if you do not want to mess with your data."],
         r"(\s*|)(>|>>)(\s*|)/dev/.*": ["as it could overwrite important data", "We do not recommend runing this, if you do not understand what the command does."],
         r"\bmv (.|\b) /dev/null\b": ["as it moves data into a black hole", "We do not recommend runing this command at all."],
