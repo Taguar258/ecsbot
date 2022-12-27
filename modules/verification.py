@@ -355,6 +355,8 @@ class Verification(commands.Cog):
         # delete vticket channel if exists
         if vticket_channel is not None:
 
+            await self._store_transcript(vticket_channel, member.name)
+
             await vticket_channel.delete()
 
     @commands.command(pass_context=True)
