@@ -281,7 +281,7 @@ class Verification(commands.Cog):
 
         )
 
-        await new_ticket_channel.send(f"G'day {member.mention}, this is your new verification channel. Please stand by as a moderator will arrive in no time.")
+        await new_ticket_channel.send(f"G'day {member.mention}, this is your new verification channel. Please stand by as a <@&690212787087081554> will arrive in no time.")
 
         # ask user a couple of question beforehand
         async with new_ticket_channel.typing():
@@ -295,10 +295,7 @@ class Verification(commands.Cog):
             await async_sleep(3)
             await new_ticket_channel.send("Thank you in advance for taking the time to verify youself.")
             await async_sleep(3)
-            await new_ticket_channel.send("The quicker the questions above are answered, the quicker you will be verified.")
-            await async_sleep(2)
-            await new_ticket_channel.send("Please be patient while <@&690212787087081554>s are on their way... :)")
-            await async_sleep(1)
+            await new_ticket_channel.send("The quicker the questions above are answered, the quicker you will be verified. :)")
 
     def _get_vticket_channel(self, user_id):
         """ get verification channel for user id
