@@ -79,8 +79,11 @@ class MessageLog(commands.Cog):
 
             embed.set_footer(text=footer)
 
-            await channel.send(embed=embed)
-
+            log_message = await channel.send(embed=embed)
+            await message.channel.send(embed=Embed(
+                description=f"*Message sent by* <@{message.author.id}> *deleted* ({log_message.jump_url})",
+                color=config.COLOR,
+            ))
 
 def setup(bot):
     """ On bot execute
