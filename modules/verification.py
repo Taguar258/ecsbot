@@ -289,13 +289,13 @@ class Verification(commands.Cog):
             await async_sleep(3)
             await new_ticket_channel.send("Nonetheless, I'd like to ask a couple of questions in advance so that moderators can verify you more quickly.")
             await async_sleep(5)
-            await new_ticket_channel.send("`1. What is the reason for your stay?`")
+            await new_ticket_channel.send("`1. What made you join this computer science server (or in general a CS server)?`")
             await async_sleep(3)
-            await new_ticket_channel.send("`2. In what way can our server help you?`")
+            await new_ticket_channel.send("`2. What are your areas of interest?`")
             await async_sleep(3)
-            await new_ticket_channel.send("Thank you in advance for taking the time to verify youself.")
+            await new_ticket_channel.send("Thank you in advance for taking the time to verify yourself.")
             await async_sleep(3)
-            await new_ticket_channel.send("The quicker the questions above are answered, the quicker you will be verified. :)")
+            await new_ticket_channel.send("This verification process is mandatory, thus please answer the questions above, so we don't have to ask again. :)")
 
     def _get_vticket_channel(self, user_id):
         """ get verification channel for user id

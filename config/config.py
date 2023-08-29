@@ -111,12 +111,13 @@ class ProductionEnv:
     VERIFICATIONCHANNELMESSAGE = """Hello fellow human, please read the information down below:
 ```md
 # Why do I need to be verified?
-- The main issue at hand is that *people keep bugging our members* by violating our rules.
-- With *this verification/ticket system* we *can reduce the amount of annoyances*.
-- That way we can *provide a better experience* to our members.
+- Due to the nature of Discord servers that deal with ethical hacking, there are a lot of people
+  intentionally and/or unintentionally violating the Community Guidelines Of Discord.
+- Thus, we utilize this *this verification/ticket system* to *prevent violations of Discord's Terms*.
+- That way we can *provide a better experience* for everyone interested in pursuing hacking legally and ethically.
 
 # What are we going to chat about?
-- Mostly about the *reason of your stay*.
+- Mostly about your computer science interest and motivation behind joining.
 
 **Thus please verify yourself by reacting to this message with :passport_control:**
 ```"""
