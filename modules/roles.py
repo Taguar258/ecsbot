@@ -22,7 +22,7 @@ class Roles(commands.Cog):
         if config.ROLESMSG == payload.message_id and \
            config.ROLESCHANNEL == payload.channel_id:
 
-            if reaction in config.ROLES.keys():
+            if reaction in config.ROLES:
 
                 await member.add_roles(
 
