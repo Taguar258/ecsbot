@@ -67,22 +67,15 @@ class ProductionEnv:
 
     # STATUS MESSAGES
     STATUS = [
-
         "Busy Researching Humans On Ethical Computing Society...",
         "Ethical Computing Society!",
         "Watching you eat pizza through your webcam",  # Author: Apolycious
         "Accessing the mainframe...",  # ° °
-        "E404: Message could not be displayed",
-
     ]
 
     MAD_STATUS = [
-
         "LOSING CONTROL!",
         "ERR0R!",
-        "?!",
-        "INSPECTING...",
-
     ]
 
     # DATA STORING
