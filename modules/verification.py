@@ -408,7 +408,6 @@ class Verification(commands.Cog):
         member = await ctx.guild.fetch_member(user_id)
 
         # ban user
-        await self._store_transcript(ctx.message.channel, member.name)
         await send_embed_dm(member, config.DENIEDMSG)
         await member.ban(reason="verification denied by a moderator", delete_message_days=0)
         await log(ctx.guild, ctx.author, "Reject", f"rejected {member.mention}")
