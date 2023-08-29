@@ -8,8 +8,6 @@ from discord_slash import SlashCommand
 from modules import IgnoreException, db
 
 # Bot initialization
-print("[Use 'C^' twice instead of using 'Z^']")
-
 intents = discord.Intents.default()
 intents.messages = True
 intents.reactions = True
