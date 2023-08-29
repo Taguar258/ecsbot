@@ -30,12 +30,12 @@ bot_extensions = [
     "modules.message_log",
     "modules.cleanup",
     "modules.bump_reminder",
+    "modules.moderation",
     # "modules.roles",
     # "modules.vote_mute",
     # "modules.iss",
     # "modules.anti_spam",
     # "modules.crypto_challenge",
-    # "modules.moderation",
     # "modules.public_help",
 
 ]
